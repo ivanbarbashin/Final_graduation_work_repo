@@ -51,7 +51,6 @@ OpenDoor Workout
 	
 	
 [ Похожие / аналогичные продукты ]
-https://lifehacker.ru/6-sajtov-kotorye-zamenyat-vam-fitnes-trenera/!!!!!!!!!!!!!!
 1)darebee.com:
 Плюсы: 
 	• сайт имеет хорошую базу упражнений
