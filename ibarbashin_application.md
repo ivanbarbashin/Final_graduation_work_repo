@@ -1,3 +1,6 @@
+# Барбашин Иван - "OpenDoor Training"
+
+
 [ НАЗВАНИЕ ПРЕКТА ]
 OpenDoor Workout
 
