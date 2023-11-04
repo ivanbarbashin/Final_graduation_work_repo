@@ -41,7 +41,7 @@ $conn->close();
             <h2>Твои цели - наши цели</h2>
         </div>
         <!-- Decoration images -->
-        <button class="welcome-block-1__hand-img" ><img src="img/welcome_hand.svg" alt=""></button>
+        <a href="reg_log.php" class="welcome-block-1__hand-img" ><img src="img/welcome_hand.svg" alt=""></a>
         <img class="welcome-block-1__biceps-left" src="img/welcome_biceps_1.svg" alt="">
         <img class="welcome-block-1__biceps-right" src="img/welcome_biceps_2.svg" alt="">
     </section>
@@ -68,5 +68,8 @@ $conn->close();
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        localStorage.setItem('SwitchRegLogButton', 'log');
+    </script>
 </body>
 </html>

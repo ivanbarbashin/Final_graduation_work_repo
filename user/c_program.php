@@ -84,7 +84,7 @@ if (isset($_POST["weeks"]) && $_POST["weeks"] > 0){
 					<section class="c-program__workouts-list">
                         <?php
                         if (count($workout_array) == 0){?>
-                            <p>Выберите тренировку</p>
+                            <p>Список тренировок пуст</p>
                         <?php }
                         for ($i = 0; $i < count($workout_array); $i++){ ?>
 						<div class="c-program__workouts-item">

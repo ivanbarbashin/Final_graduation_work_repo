@@ -64,9 +64,9 @@ if (isset($_POST["week_days"])){
 					<!-- Decorative line -->
 					<div class="workouts-card__info-line"></div>
 					<!-- Buttons edit and start -->
-					<div class="day-workouts__card-buttons">
-						<a class="button-text day-workouts__card-button day-workouts__card-button--add" href="c_exercises.php"><p>Добавить</p> <img src="../img/add.svg" alt=""></a>
-						<button class="button-text day-workouts__card-button"><p>Очистить</p> <img src="../img/delete.svg" alt=""></button>
+					<div class="day-workouts__card-buttons day-workouts__card-buttons--c">
+						<a class="button-text day-workouts__card-button day-workouts__card-button--add" href="c_exercises.php"><p>Добавить упражнение</p> <img src="../img/add.svg" alt=""></a>
+						<a href="clear.php" class="button-text day-workouts__card-button"><p>Очистить</p> <img src="../img/delete.svg" alt=""></a>
 					</div>
 				</section>
 			</section>
@@ -75,7 +75,7 @@ if (isset($_POST["week_days"])){
 					<h1 class="c-workout__info-title">Название:</h1>
                     <input class="c-workout__info-name" type="text" placeholder="Название тренировки" value="" name="name">
 				</section>
-                <section class="c-workout__info-header">
+                <section class="c-workout__info-header c-workout__info-header--circle">
                     <h2 class="c-workout__info-subtitle">Количество кругов</h2>
                     <input class="c-workout__info-circles" type="number" value="1" name="loops">
                 </section>
