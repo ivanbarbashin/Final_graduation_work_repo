@@ -2,7 +2,7 @@
 include "../templates/func.php";
 include "../templates/settings.php";
 $request_flag = false;
-if ($_GET["user"]){
+if (isset($_GET["user"])){
     $user = new User($conn, $_GET["user"]);
     $user_data->set_staff($conn);
     $request_flag = $user_data->check_request($conn, $user->get_id());
@@ -49,6 +49,25 @@ if (isset($_POST["prep"])){
         echo $conn->error;
     }
 }
+
+if (isset($_POST["tg"]) && $_POST["tg"] != $user->tg){
+    $tg=$_POST["tg"];
+    $sql = "UPDATE users SET tg='$tg' WHERE id=".$user->get_id();
+    if ($conn->query($sql))
+        $user->tg = $tg;
+    else
+        echo $conn->error;
+
+}
+
+if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
+    $vk=$_POST["vk"];
+    $sql = "UPDATE users SET vk='$vk' WHERE id=".$user->get_id();
+    if ($conn->query($sql))
+        $user->vk = $vk;
+    else
+        echo $conn->error;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +105,7 @@ if (isset($_POST["prep"])){
                          if (!$user->get_auth() && in_array($user_data->get_id(), $user->subscribers)){ ?>
                             <a class="button-text user-block__sub-button" href="unsub.php?id=<?php echo $user->get_id(); ?>">Отписаться</a>
                         <?php }else if (!$user->get_auth()){ ?>
-                            <a class="button-text user-block__sub-button" href="sub.php?id=<?php echo $user->get_id(); ?>">Подписаться</a>
+                            <a class="button-text user-block__sub-button" href="sub.php?id=<?php echo $user->get_id(); ?>"><p>Подписаться</p><img src="../img/add.svg" alt=""></a>
                         <?php }
                          ?>
                     </section>
@@ -105,10 +124,6 @@ if (isset($_POST["prep"])){
 				</section>
                 <!-- User's news -->
 				<section class="user-news">
-                    <!-- Button 'Новая запись' -->
-                    <!-- <?php if ($user->get_auth()){ ?>
-					    <button class="button-text user-news__add">Новая запись <img src="../img/add.svg" alt=""></button>
-                    <?php } ?> -->
 					<!-- News item -->
                     <?php
                     if ($news = $user->get_my_news($conn)) {
@@ -171,8 +186,8 @@ if (isset($_POST["prep"])){
 					</div>
                     <!-- Count of subscribers and subscriptions -->
 					<div class="user-block__sub-count">
-						<a class="user-block__sub-count-item" href=""><span><?php echo count($user->subscribers); ?> подписчик(ов)</span></a>
-						<a class="user-block__sub-count-item" href=""><span><?php echo count($user->subscriptions); ?> подписок</span></a>
+						<p class="user-block__sub-count-item" href=""><span><?php echo count($user->subscribers); ?> подписчика(ов)</span></p>
+						<p class="user-block__sub-count-item" href=""><span><?php echo count($user->subscriptions); ?> подписок(ски)</span></p>
 					</div>
 				</section>
 
@@ -184,9 +199,7 @@ if (isset($_POST["prep"])){
                     <?php if (!$user->get_auth() && $user_data->get_status() == "user" && (($user->get_status() == "coach" && $user_data->coach == NULL) || ($user->get_status() == "doctor" && $user_data->doctor == NULL)) && !$request_flag){ ?>
                         <a href="send_request.php?id=<?php echo $user->get_id();?>" class="button-text user-block__button"><p>Отправить заявку</p> <img src="../img/send.svg" alt=""></a>
                     <?php } ?>
-					<a href="search_users.php" class="button-text user-block__button"><p>Поиск спортсменов</p> <img src="../img/search_white.svg" alt=""></a>
                     <?php if ($user->get_auth()){ ?>
-                    <button class="button-text user-block__button"><p>Редактировать профиль</p> <img src="../img/edit.svg" alt=""></button>
 					<a href="../clear.php" class="button-text user-block__button-logout">Выйти <img src="../img/logout.svg" alt=""></a>
                     <?php }?>
 				</section>
@@ -216,6 +229,20 @@ if (isset($_POST["prep"])){
                         <p class="popup-user__info-item-info"><?php $user->print_prep(); ?></p>
                     </div>
                 <?php } ?>
+                <div class="popup-user__info-item">
+                    <?php if ($user->tg != NULL){ ?>
+                    <div class="popup-user__info-social">
+                        <p class="popup-user__info-item-name popup-user__info-social-name">Телеграм:</p>
+                        <a href="<?php echo $user->tg; ?>"><img src="../img/tg.svg" alt=""></a>
+                    </div>
+                    <?php }
+                    if ($user->vk != NULL){ ?>
+                    <div class="popup-user__info-social popup-user__info-social-name">
+                        <p class="popup-user__info-item-name popup-user__info-social-name">Вконтакте:</p>
+                        <a href="<?php echo $user->vk; ?>"><img src="../img/vk.svg" alt=""></a>
+                    </div>
+                    <?php } ?>
+                </div>
                 <?php if ($user->get_auth()){  ?>
                     <button type="button" class="popup-user__edit-button"><img src="../img/edit_gray.svg" alt="">Изменить</button>
                 <?php } ?>
@@ -250,8 +277,8 @@ if (isset($_POST["prep"])){
                     <p class="popup-user__info-item-name">Тип доктора</p>
                     <select class="popup-user__select" name="type" id="">
                         <option class="popup-user__option" selected value="0">не указан</option>
-                        <option class="popup-user__option" value="1">личный тренер</option>
-                        <option class="popup-user__option" value="2">тренер команды</option>
+                        <option class="popup-user__option" value="1">личный врач</option>
+                        <option class="popup-user__option" value="2">врач команды</option>
                     </select>
                 </div>
 
@@ -281,6 +308,17 @@ if (isset($_POST["prep"])){
                         </select>
                     </div>
                 <?php } ?>
+
+                <div class="popup-user__info-item">
+                    <p class="popup-user__info-item-name">Телеграм:</p>
+                    <input name="tg" class="popup-user__input" type="text" placeholder="вставьте ссылку">
+                </div>
+
+                <div class="popup-user__info-item">
+                    <p class="popup-user__info-item-name">Вконтакте:</p>
+                    <input name="vk" class="popup-user__input" type="text" placeholder="вставьте ссылку">
+                </div>
+
                 <button type="submit" class="button-text popup-user__save-button">Сохранить</button>
             </form>
 		</section>
@@ -394,9 +432,18 @@ if (isset($_POST["prep"])){
 
         let UserInfoEditPopup = document.querySelector('.popup-exercise--user-info-edit');
 
+        let socialLinks = document.querySelectorAll('.popup-user__info-social a');
+        let socialLinksEdit = document.querySelectorAll('.popup-user__input');
+
         MoreInfoEditButton.addEventListener('click', function(){
             UserInfoPopup.classList.remove("open");
 			UserInfoEditPopup.classList.add("open");
+
+            for(let i = 0; i < socialLinksEdit.length; i++){
+                if(socialLinks[i].href != ''){
+                    socialLinksEdit[i].value = socialLinks[i].href;
+                }
+            }
 		});
 
 

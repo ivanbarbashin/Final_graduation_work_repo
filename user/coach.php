@@ -122,7 +122,7 @@ if ($is_selected){
 					<div class="staff-block__nearest-workout-content">
 						<div class="staff-block__nearest-workout-date"><?php $cl_w = $user->get_closest_workout($conn);
                         if ($cl_w != NULL) echo date("d.m.Y", $cl_w); else echo "Тренировок не будет" ?></div>
-						<a href="" class="staff-block__button-more"><p>Подробнее</p> <img src="../img/more_white.svg" alt=""></a>
+						<a href="workout.php" class="staff-block__button-more"><p>Подробнее</p> <img src="../img/more_white.svg" alt=""></a>
 					</div>
 				</section>
                 <?php } ?>
