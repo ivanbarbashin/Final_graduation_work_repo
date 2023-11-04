@@ -29,66 +29,48 @@ $cnt_apps = 0;
     </header>
     
     <main class="session-exercises">
-        <div class="session-exercises__info-cover">
-            <section class="session-exercises__info">
-                <div class="session-exercises__help">
-                    <p class="session-exercises__help-item session-exercises__help-item--green">время на подход</p>
-                    <p class="session-exercises__help-item"> | </p>
-                    <p class="session-exercises__help-item session-exercises__help-item--white">время на отдых</p>
-                </div>
-                <!-- Timer -->
-                <div class="workout-session__time">
-                    00:00
-                </div>
-                <!-- Navigation of test -->
-                <nav class="workout-session__navigation">
-
-                </nav>
-            </section>
+        <div class="container">
+            <div class="session-exercises__info-cover">
+                <section class="session-exercises__info">
+                    <div class="session-exercises__help">
+                        <p class="session-exercises__help-item session-exercises__help-item--green">время на подход</p>
+                        <p class="session-exercises__help-item"> | </p>
+                        <p class="session-exercises__help-item session-exercises__help-item--white">время на отдых</p>
+                    </div>
+                    <!-- Timer -->
+                    <div class="workout-session__time">
+                        00:00
+                    </div>
+                </section>
+            </div>
+            <swiper-container class="session-exercises__swiper" pagination="true" pagination-clickable="true" navigation="true" space-between="30" loop="true">
+                <!-- for loop -->
+                <?php for ($i = 0; $i < $workout->loops; $i++) { foreach ($workout->exercises as $exercise){?>
+                <swiper-slide class="session-exercises__slide">
+                    <?php
+                    $cnt_apps += $exercise->approaches;
+                    $exercise->print_it($conn, false, false, false, true);
+                    # echo render($replaces, "../templates/user_exercise.html");
+                    ?>
+                </swiper-slide>
+                <?php } } ?>
+            </swiper-container>
         </div>
-        <swiper-container class="session-exercises__swiper" navigation="true">
-            <!-- for loop -->
-            <?php for ($i = 0; $i < $workout->loops; $i++) { foreach ($workout->exercises as $exercise){?>
-            <swiper-slide class="session-exercises__slide">
-                <?php
-                $cnt_apps += $exercise->approaches;
-                $exercise->print_it($conn);
-                # echo render($replaces, "../templates/user_exercise.html");
-                ?>
-            </swiper-slide>
-            <?php } } ?>
-        </swiper-container>
     </main>
 
     <footer class="workout-session-footer">
         <h1 class="workout-session-footer__title">Осталось:</h1>
         <h2 class="workout-session-footer__item"><span><?php echo count($workout->exercises); ?></span> упражнений</h2>
         <h2 class="workout-session-footer__item"><span><?php echo $cnt_apps; ?></span> подходов</h2>
-        <a href="end_workout.php" class="button-text workout-session-footer__button">Завершить</a>
+        <form method="post" action="end_workout.php">
+            <input class="workout-session-footer__input" name="time" type="hidden" value="0">
+            <button class="button-text workout-session-footer__button">Завершить</button>
+        </form>
+        
     </footer>
     
-    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js"></script>
     <script>
-        // Navigation
-        let questionsArr = document.querySelectorAll('.exercise-item');
-
-        
-        const testNavigation = document.querySelector('.workout-session__navigation');
-        const progressBar = document.querySelector('.workout-session__finish-line');
-        let percents = document.querySelector('.workout-session__percents-number');
-
-        for(let i = 0; i < questionsArr.length; i++){
-            let newElem = document.createElement('button');
-            newElem.classList.add('button-text');
-            newElem.classList.add('workout-session__navigation-button');
-            newElem.innerHTML = `${i+1}`;
-            testNavigation.appendChild(newElem);
-        }
-
-        const navigationButtons = document.querySelectorAll('.workout-session__navigation-button');
-
-        
-
         // Button to see exercise info
         let infoExerciseButton = document.querySelectorAll('.exercise-item__info-btn');
         let closeInfoExerciseButton = document.querySelectorAll('.exercise-item__info-close');
@@ -106,14 +88,12 @@ $cnt_apps = 0;
         }
 
 
-
         //Difficult
 		let difficultCountArr = document.querySelectorAll('.exercise-item__difficult-number');
 		let difficultBlockArr = document.querySelectorAll('.exercise-item__difficult');
 
 		for(let i = 0; i < difficultCountArr.length; i++){
 			difficultBlockArr[i].innerHTML = '';
-			console.log(Number(difficultCountArr[i].innerHTML) - 1)
             for(let j = 0; j < 5; j++){
 				let newElem = document.createElement('div');
 				newElem.classList.add('exercise-item__difficult-item');
@@ -123,6 +103,122 @@ $cnt_apps = 0;
 				difficultBlockArr[i].appendChild(newElem);
 			}
         }
+
+
+    
+        // Timer
+        let TimeForWork = localStorage.getItem('TimeForWork') * 60;
+        let TimeForRest = localStorage.getItem('TimeForRest') * 60;
+        let currentWorkTime = 0;
+        let currentRestTime = 0;
+        const timer = document.querySelector('.workout-session__time');
+        let FinsishButton = document.querySelector('.workout-session-footer__button');
+        let time = 0;
+
+        let workoutSessionInputTime = document.querySelector('.workout-session-footer__input');
+
+        if(localStorage.getItem(`SpendWorkoutTime`) && localStorage.getItem(`SpendWorkoutTime`) != -1){
+            time = localStorage.getItem(`SpendWorkoutTime`);
+            workoutSessionInputTime.value = time;
+
+            let minutes = Math.floor(time / 60);
+            let seconds = time % 60;
+            if (seconds < 10){
+                seconds = '0' + seconds;
+            }
+            if (minutes < 10){
+                minutes = '0' + minutes;
+            }
+            timer.innerHTML = `${minutes}:${seconds}`;
+
+            if (localStorage.getItem(`Period`) == 'Rest'){
+                timer.style.cssText = 'background-color: rgb(1, 221, 34); box-shadow: 0px 3px 0px rgba(0, 94, 13, 1);';
+            }
+            else{
+                timer.style.cssText = 'color: #ffffff; background-color: rgba(0, 94, 13, 1); box-shadow: 0px 3px 0px rgb(1, 221, 34);';
+            }
+        }
+        else{
+            localStorage.setItem(`SpendWorkoutTime`, 0);
+            localStorage.setItem(`Period`, 'Work');
+        }
+
+
+        let IntervalTimer = setInterval(UpdateTime, 1000);
+
+        time++;
+        workoutSessionInputTime.value = time;
+        localStorage.setItem(`SpendWorkoutTime`, time);
+
+        FinsishButton.addEventListener('click', function(){
+            clearInterval(IntervalTimer);
+            localStorage.setItem("TimeForWork", -1);
+            localStorage.setItem("TimeForRest", -1);
+            time = 0;
+            localStorage.setItem(`SpendWorkoutTime`, -1);
+        });
+
+        
+        function UpdateTime(){
+            let minutes = Math.floor(time / 60);
+            let seconds = time % 60;
+            if (seconds < 10){
+                seconds = '0' + seconds;
+            }
+            if (minutes < 10){
+                minutes = '0' + minutes;
+            }
+
+            timer.innerHTML = `${minutes}:${seconds}`;
+
+            time++;
+            workoutSessionInputTime.value = time;
+            localStorage.setItem(`SpendWorkoutTime`, time);
+
+            if(TimeForWork >= 0 && TimeForRest >= 0){
+                if (time - (Math.floor(time / (TimeForWork + TimeForRest)) * (TimeForWork + TimeForRest)) == TimeForWork){
+                    timer.style.cssText = 'background-color: rgb(1, 221, 34); box-shadow: 0px 3px 0px rgba(0, 94, 13, 1);';
+                    localStorage.setItem(`Period`, 'Rest');
+                }
+                else if (time % (TimeForWork + TimeForRest) == 0){
+                    timer.style.cssText = 'color: #ffffff; background-color: rgba(0, 94, 13, 1); box-shadow: 0px 3px 0px rgb(1, 221, 34);';
+                    localStorage.setItem(`Period`, 'Work');
+                }
+            }
+            
+        }
+
+
+
+        // Progress
+        let repetDoneButtons = document.querySelectorAll('.exercise-item__done');
+        let exercisesLeft = document.querySelectorAll('.workout-session-footer__item span')[0];
+        let AllrepetsLeft = document.querySelectorAll('.workout-session-footer__item span')[1];
+        let exerciseRepetsLeft = document.querySelectorAll('.exercise-item__repetitions-title span');
+        let exerciseTitle = document.querySelectorAll('.exercise-item__repetitions-title');
+        
+        for(let i = 0; i < repetDoneButtons.length; i++){
+            repetDoneButtons[i].addEventListener('click', function(){
+                let Count = parseInt(exerciseRepetsLeft[i].innerHTML);
+                Count -= 1;
+                if(Count == 0){
+                    exerciseTitle[i].innerHTML = `сделанно`;
+                    exercisesLeft.innerHTML = `${parseInt(exercisesLeft.innerHTML) - 1}`;
+                    repetDoneButtons[i].style.cssText = `display: none;`;
+                }
+                exerciseRepetsLeft[i].innerHTML = `${parseInt(exerciseRepetsLeft[i].innerHTML) - 1}`;
+                AllrepetsLeft.innerHTML = `${parseInt(AllrepetsLeft.innerHTML) - 1}`;
+                if(parseInt(exercisesLeft.innerHTML) == 0){
+                    clearInterval(IntervalTimer);
+                    localStorage.setItem("TimeForWork", -1);
+                    localStorage.setItem("TimeForRest", -1);
+                    time = 0;
+                    localStorage.setItem(`SpendWorkoutTime`, -1);
+                    FinsishButton.click();
+                }
+            });
+        }
+
 
     </script>
 </body>

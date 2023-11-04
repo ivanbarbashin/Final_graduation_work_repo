@@ -129,6 +129,23 @@ if (isset($_POST["workout_to_fav"])){
                 </section>
             </section>
         </div>
+
+
+        <!-- Timer edit -->
+		<section class="popup-exercise popup-exercise--timer-edit">
+			<section class="popup-exercise__content popup-exercise--timer-edit__content">
+				<button type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
+                <div class="popup-exercise--timer-edit__item">
+                    <label class="popup-exercise--timer-edit__item__label" for="time_for_work">Время на подход (мин)</label>
+                    <input class="popup-exercise__input-item popup-exercise--timer-edit__item__input" id="time_for_work" type="number">
+                </div>
+				<div class="popup-exercise--timer-edit__item">
+                    <label class="popup-exercise--timer-edit__item__label" for="time_for_rest">Время на отдых (мин)</label>
+                    <input class="popup-exercise__input-item popup-exercise--timer-edit__item__input" id="time_for_rest" type="number">
+                </div>
+				<button class="button-text popup-exercise__submit-button popup-exercise__button--edit-timer">Сохранить</button>
+			</section>
+		</section>
     </main>
 
     <?php include "../templates/footer.html" ?>
@@ -163,6 +180,69 @@ if (isset($_POST["workout_to_fav"])){
         for(let i = 0; i < infoItemsSpans.length; i++){
             infoItemsSpans[i].style.cssText = `width: ${maxSpanWidth}px;`;
             console.log(infoItemsSpans[i].clientWidth)
+        }
+
+
+        // Timer
+        let TimerEditButton = document.querySelector('.day-workouts__card-button--time');
+        let TimerEditPopup = document.querySelector('.popup-exercise--timer-edit');
+        console.log(TimerEditPopup)
+
+        TimerEditButton.addEventListener('click', function(){
+			TimerEditPopup.classList.add("open");
+		});
+
+		const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
+		for(let i = 0; i < closeBtn.length; i++){
+			closeBtn[i].addEventListener('click', function(){
+				TimerEditPopup.classList.remove("open");
+			});
+		}
+
+		window.addEventListener('keydown', (e) => {
+		if(e.key == "Escape"){
+			TimerEditPopup.classList.remove("open");
+		}
+		});
+
+		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
+			event.isClickWithInModal = true;
+		});
+
+
+        // Data for timer
+        let submitTimerButton = document.querySelector('.popup-exercise__button--edit-timer');
+        let TimerEditInputs = document.querySelectorAll('.popup-exercise--timer-edit__item__input');
+        let time = localStorage.getItem(`SpendWorkoutTime`);
+
+        if(localStorage.getItem("TimeForWork") == -1 && localStorage.getItem("TimeForRest") == -1){
+            localStorage.setItem("TimeForWork", -1);
+            localStorage.setItem("TimeForRest", -1);
+            clearInterval(IntervalTimer);
+        }
+        else{
+            time++;
+            localStorage.setItem(`SpendWorkoutTime`, time);
+
+            let IntervalTimer = setInterval(UpdateTime, 1000); 
+        }
+
+        submitTimerButton.addEventListener('click', function(){
+            let TimeForWork = TimerEditInputs[0].value;
+            let TimeForRest = TimerEditInputs[1].value;
+            if(TimeForWork != ''){
+                localStorage.setItem("TimeForWork", TimeForWork);
+            }
+            if(TimeForRest != ''){
+                localStorage.setItem("TimeForRest", TimeForRest);
+            }
+            TimerEditPopup.classList.remove("open");
+        });
+
+
+        function UpdateTime(){
+            time++;
+            localStorage.setItem(`SpendWorkoutTime`, time);
         }
     </script>
 </body>

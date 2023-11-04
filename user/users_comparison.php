@@ -1,6 +1,18 @@
 <?php
 include "../templates/func.php";
 include "../templates/settings.php";
+$user1 = NULL;
+$user2 = NULL;
+$sportsmen = $user_data->get_sportsmen();
+$is_valid1 = isset($_GET["user1"]) && is_numeric($_GET["user1"]) && in_array($_GET["user1"], $sportsmen);
+$is_valid2 = isset($_GET["user2"]) && is_numeric($_GET["user2"]) && in_array($_GET["user2"], $sportsmen);
+if ($is_valid1)
+    $user1 = new User($conn, $_GET["user1"]);
+
+if ($is_valid2)
+    $user2 = new User($conn, $_GET["user2"]);
+
+$sportsmen_advanced = $user_data->get_sportsmen_advanced($conn);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,84 +24,100 @@ include "../templates/settings.php";
 		<div class="container">
 			<section class="comparison-block">
 				<p class="staff-block__title">Первый спортсмен</p>
-				<section class="staff-block__header">
-					<button class="button-text comparison-block__add-button"><p>Добавить спортсмена</p> <img src="../img/add.svg" alt=""></button>
-				</section>
+                    <?php if ($user1 == NULL){ ?>
+                        <section class="staff-block__header">
+                            <button class="button-text comparison-block__add-button comparison-block__add-button--first"><p>Добавить спортсмена</p> <img src="../img/add.svg" alt=""></button>
+                        </section>
+                    <?php } else {
+                        $reps = get_reps_for_comparison($user1, $conn, 1, $_GET["user2"]);
+                        echo render($reps, "../templates/comparison_block.html");
+                    } ?>
 			</section>
 			<section class="comparison-block">
 				<p class="staff-block__title">Второй спортсмен</p>
-				<section class="staff-block__header">
-					<img class="staff-block__avatar" src="../img/man_avatar.svg" alt="">
-					<section class="staff-block__info">
-						<div class="staff-block__name">
-							<h1 class="staff-block__name-text">Иван Иванов</h1>
-							<a class="staff-block__profile-link" href=""><img src="../img/profile_black.svg" alt=""></a>
-						</div>
-						<div class="staff-block__buttons">
-							<a href="" class="staff-block__button staff-block__button--img"><img src="../img/vk.svg" alt=""></a>
-							<a href="../img/tg.svg" class="staff-block__button staff-block__button--img"><img src="../img/tg.svg" alt=""></a>
-							<button class="button-text staff-block__button staff-block__button--delite"><p>Удалить</p> <img src="../img/delete.svg" alt=""></button>
-						</div>
-					</section>
-				</section>
-				<div class="staff-block__line"></div>
-				<section class="comparison-block__physics">
-					<h2 class="staff-block__subtitle">Физические данные</h2>
-					<div class="comparison-block__physics-content">
-						<div class="comparison-block__physics-item">
-							<p class="comparison-block__physics-name">Вес</p>
-							<div class="comparison-block__physics-number">70 кг</div>
-						</div>
-						<div class="comparison-block__physics-item">
-							<p class="comparison-block__physics-name">Рост</p>
-							<div class="comparison-block__physics-number">180 см</div>
-						</div>
-					</div>
-				</section>
-				<div class="staff-block__line"></div>
-				<section class="comparison-block__exercises">
-					<h2 class="staff-block__subtitle">Контрольная тренировка</h2>
-					<section class="exercise-item exercise-item--workout">
-						<!-- Exercise info button -->
-						<button type="button"  class="exercise-item__info-btn"><img src="../img/info.svg" alt=""></button>
-						<!-- Info text -->
-						<div class="exercise-item__info-content">
-							<button type="button" class="exercise-item__info-close"><img src="../img/close.svg" alt=""></button>
-							<p class="exercise-item__info-text">{{ description }}</p>
-						</div>
-						<!-- Exercise muscle groups -->
-						<div class="exercise-item__muscle-groups">{{ muscle }}</div>
-						<!-- Exercise image -->
-						<img class="exercise-item__img" src="{{ image }}" alt="">
-						<!-- Decoration line -->
-						<div class="exercise-item__line"></div>
-						<!-- Exercise title -->
-						<h1 class="exercise-item__title">{{ name }}</h1>
-						<!-- Rating and difficult -->
-						<div class="exercise-item__statistic">
-							<div class="exercise-item__rating">
-								<p class="exercise-item__score">{{ rating }}</p>
-								<img class="exercise-item__star" src="../img/Star.svg" alt="">
-							</div>
-							<div class="exercise-item__difficult">
-								<p class="exercise-item__difficult-number">{{ difficulty }}</p>
-								<div class="exercise-item__difficult-item"></div>
-							</div>
-						</div>
-						<!-- Count of repetitions -->
-						<div class="exercise-item__progress">
-							<div class="exercise-item__repetitions">
-								<p class="exercise-item__repetitions-title">22 x 33</p>
-							</div>
-							<p class="exercise-item__progress-number exercise-item__progress-number--green">+ 30%</p>
-						</div>
-						
-					</section>
-				</section>
+                    <?php if ($user2 == NULL){ ?>
+                        <section class="staff-block__header">
+                            <button class="button-text comparison-block__add-button comparison-block__add-button--second"><p>Добавить спортсмена</p> <img src="../img/add.svg" alt=""></button>
+                        </section>
+                    <?php } else {
+                        $reps = get_reps_for_comparison($user2, $conn, 2, $_GET["user1"]);
+                        echo render($reps, "../templates/comparison_block.html");
+                    } ?>
 			</section>
 		</div>
+
+        <section class="popup-exercise popup-exercise--user-first">
+			<form class="popup-exercise__content popup-exercise--add-users__form">
+				<button type="button" type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
+                    <?php foreach ($sportsmen_advanced as $sportsman){ ?>
+                    <div class="popup-exercise--add-users__item">
+                        <input class="popup-exercise--add-users__input" type="radio" id="users-list1" name="user1" value="<?php echo $sportsman->get_id(); ?>"/>
+                        <label class="popup-exercise--add-users__label" for="users-list1"><?php echo $sportsman->name. " " . $sportsman->surname; ?></label>
+                    </div>
+                    <?php }
+                    if ($is_valid2){ ?>
+                        <input type="hidden" name="user2" value="<?php echo $user2->get_id(); ?>">
+                    <?php } ?>
+				<button type="submit" class="button-text popup-exercise--add-users__button-add" type="submit"><p>Добавить</p><img src="../img/add.svg" alt=""></button>
+			</form>
+		</section>
+
+        <section class="popup-exercise popup-exercise--user-second">
+            <form class="popup-exercise__content popup-exercise--add-users__form">
+				<button type="button" type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
+                <?php if ($is_valid1){ ?>
+                    <input type="hidden" name="user1" value="<?php echo $user1->get_id(); ?>">
+                <?php }
+                foreach ($sportsmen_advanced as $sportsman){ ?>
+                <div class="popup-exercise--add-users__item">
+					<input class="popup-exercise--add-users__input" type="radio" id="users-list2" name="user2" value="<?php echo $sportsman->get_id(); ?>"/>
+					<label class="popup-exercise--add-users__label" for="users-list2"><?php echo $sportsman->name. " " . $sportsman->surname; ?></label>
+				</div>
+                <?php } ?>
+				<button type="submit" class="button-text popup-exercise--add-users__button-add" type="submit"><p>Добавить</p><img src="../img/add.svg" alt=""></button>
+			</form> 
+		</section>
 	</main>
 
     <?php include "../templates/footer.html" ?>
+
+    <script>
+        let FirstUserAddPopup = document.querySelector('.popup-exercise--user-first');
+        let SecondUserAddPopup = document.querySelector('.popup-exercise--user-second');
+
+        let userAddButtonFirst = document.querySelector('.comparison-block__add-button--first');
+        let userAddButtonSecond = document.querySelector('.comparison-block__add-button--second');
+
+        if(userAddButtonFirst){
+            userAddButtonFirst.addEventListener('click', function(){
+                FirstUserAddPopup.classList.add("open");
+            });
+        }
+        if(userAddButtonSecond){
+            userAddButtonSecond.addEventListener('click', function(){
+                SecondUserAddPopup.classList.add("open");
+            });
+        }
+        
+
+        const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
+		for(let i = 0; i < closeBtn.length; i++){
+			closeBtn[i].addEventListener('click', function(){
+				FirstUserAddPopup.classList.remove("open");
+                SecondUserAddPopup.classList.remove("open");
+			});
+		}
+
+		window.addEventListener('keydown', (e) => {
+            if(e.key == "Escape"){
+                FirstUserAddPopup.classList.remove("open");
+                SecondUserAddPopup.classList.remove("open");
+            }
+		});
+
+		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
+			event.isClickWithInModal = true;
+		});
+    </script>
 </body>
 </html>
