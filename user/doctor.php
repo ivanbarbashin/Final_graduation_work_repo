@@ -1,6 +1,65 @@
 <?php
 include "../templates/func.php";
 include "../templates/settings.php";
+
+if ($user_data->get_status() != "doctor")
+    header("Location: profile.php");
+
+$user = NULL;
+if (isset($_GET["user"]) && $_GET["user"] != ''){
+    $user = new User($conn, $_GET["user"]);
+}
+
+$is_selected = $user != NULL && $user->get_id() != NULL && in_array($user->get_id(), $user_data->get_sportsmen());
+$sportsmen = $user_data->get_sportsmen_advanced($conn);
+
+if (isset($_POST["request_name"])){
+    $data = $user_data->get_doctor_data($conn, $_POST["user_med"]);
+    switch ($_POST["request_name"]){
+        case "add_medicine":
+            if (empty($_POST["name"]) || $_POST["name"] == "")
+                break;
+            $sql = "INSERT INTO medicines (name, caption) VALUES ('".$_POST["name"]."', '".$_POST["caption"]."')";
+            if ($conn->query($sql)){
+                $id = mysqli_insert_id($conn);
+                if ($data != NULL){
+                    $medicines = json_decode($data["medicines"]);
+                    array_push($medicines, $id);
+                    $medicines = json_encode($medicines, 256);
+                    $data["medicines"] = $medicines;
+                    $user_data->update_doctor_data($conn, $data);
+                }else{
+                    echo "NULL";
+                }
+            }else{
+                echo $conn->error;
+            }
+            break;
+        case "update_period":
+            $start = strtotime($_POST["start"]);
+            $end = strtotime($_POST["end"]);
+            if (!$start)
+                $start = NULL;
+            if (!$end)
+                $end = NULL;
+            $data["intake_start"] = $start;
+            $data["intake_end"] = $end;
+            $user_data->update_doctor_data($conn, $data);
+            break;
+        case "update_recommendations":
+            if ($_POST["text"] == "")
+                $data["recommendations"] = NULL;
+            else
+                $data["recommendations"] = $_POST["text"];
+            $user_data->update_doctor_data($conn, $data);
+            break;
+    }
+}
+
+if ($is_selected){
+    $data = $user_data->get_doctor_data($conn, $user->get_id());
+    $data["medicines"] = json_decode($data["medicines"]);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,19 +69,23 @@ include "../templates/settings.php";
 
 	<main class="staff-cover">
 		<div class="container">
+            <?php if ($is_selected){ ?>
 			<section class="staff-block">
 				<p class="staff-block__title">Спортсмен</p>
 				<section class="staff-block__header">
-					<img class="staff-block__avatar" src="../img/man_avatar.svg" alt="">
+					<img class="staff-block__avatar" src="<?php echo $user->get_avatar($conn); ?>" alt="">
 					<section class="staff-block__info">
 						<div class="staff-block__name">
-							<h1 class="staff-block__name-text">Иван Иванов</h1>
-							<a class="staff-block__profile-link" href=""><img src="../img/profile_black.svg" alt=""></a>
+							<h1 class="staff-block__name-text"><?php echo $user->name." ".$user->surname; ?></h1>
+							<a class="staff-block__profile-link" href="profile.php?user=<?php echo $user->get_id(); ?>"><img src="../img/profile_black.svg" alt=""></a>
 						</div>
 						<div class="staff-block__buttons">
-							<a href="" class="staff-block__button staff-block__button--img"><img src="../img/vk.svg" alt=""></a>
-							<a href="../img/tg.svg" class="staff-block__button staff-block__button--img"><img src="../img/tg.svg" alt=""></a>
-							<button class="button-text staff-block__button staff-block__button--delite"><p>Удалить</p> <img src="../img/delete.svg" alt=""></button>
+                            <?php if ($user->vk != NULL) { ?>
+							<a href=<?php echo $user->vk; ?>"" class="staff-block__button staff-block__button--img"><img src="../img/vk.svg" alt=""></a>
+                            <?php } if ($user->tg != NULL) { ?>
+							<a href="<?php echo $user->tg; ?>" class="staff-block__button staff-block__button--img"><img src="../img/tg.svg" alt=""></a>
+                            <?php } ?>
+							<a href="delete_sportsman.php?user=<?php echo $user->get_id(); ?>" class="button-text staff-block__button staff-block__button--delite"><p>Удалить</p> <img src="../img/delete.svg" alt=""></a>
 						</div>
 					</section>
 				</section>
@@ -30,18 +93,12 @@ include "../templates/settings.php";
 				<section class="staff-block__item">
 					<h2 class="staff-block__subtitle">Прием лекарств</h2>
 					<div class="staff-block__medicines">
-						<div class="staff-block__medicine-item">
-							<p class="staff-block__medicine-name">Мазь</p>
-							<div class="staff-block__medicine-dose">2 раза в день</div>
-							<button class="button-img staff-block__item-button"><img src="../img/edit.svg" alt=""></button>
-							<button class="button-img staff-block__item-button"><img src="../img/delete.svg" alt=""></button>
-						</div>
-						<div class="staff-block__medicine-item">
-							<p class="staff-block__medicine-name">Мазь</p>
-							<div class="staff-block__medicine-dose">2 раза в день</div>
-							<button class="button-img staff-block__item-button"><img src="../img/edit.svg" alt=""></button>
-							<button class="button-img staff-block__item-button"><img src="../img/delete.svg" alt=""></button>
-						</div>
+                        <?php if (count($data["medicines"]) > 0)
+                            foreach ($data["medicines"] as $medicine)
+                                print_medicine($conn, (int)$medicine, $user->get_id());
+                        else{ ?>
+                            <p class="staff-block__medicines-none">Нет назначенных лекарств</p>
+                        <?php } ?>
 					</div>
 					<button class="button-text staff-block__item-button--add"><p>Добавить</p><img src="../img/add.svg" alt=""></button>
 				</section>
@@ -49,9 +106,9 @@ include "../templates/settings.php";
 				<section class="staff-block__item">
 					<h2 class="staff-block__subtitle">Период лечения</h2>
 					<div class="staff-block__treatment-date">
-						<div class="staff-block__treatment-date-item">12.02.2023</div>
+						<div class="staff-block__treatment-date-item"><?php if ($data["intake_start"] == NULL) echo "Не выбрано"; else echo date("d.m.Y", $data["intake_start"]) ?></div>
 						<div class="staff-block__treatment-date-line"></div>
-						<div class="staff-block__treatment-date-item">12.03.2023</div>
+						<div class="staff-block__treatment-date-item"><?php if ($data["intake_end"] == NULL) echo "Не выбрано"; else echo date("d.m.Y", $data["intake_end"]) ?></div>
 					</div>
 					<div class="staff-block__treatment-buttons">
 						<button class="button-img staff-block__item-button staff-block__item-button--date"><img src="../img/edit.svg" alt=""></button>
@@ -60,12 +117,17 @@ include "../templates/settings.php";
 				<div class="staff-block__line"></div>
 				<section class="staff-block__item">
 					<h2 class="staff-block__subtitle">Рекомендации по лечению</h2>
-					<div class="staff-block__treatment-recommendation">Избегать физических нагрузок, побольше кайфа и чайку оформить. АААААААААААААААААААААА</div>
+					<div class="staff-block__treatment-recommendation"><?php if (isset($data["recommendations"]) && $data["recommendations"] != "") echo $data["recommendations"]; else echo "Нет рекоммендаций"; ?></div>
 					<div class="staff-block__treatment-buttons">
 						<button class="button-img staff-block__item-button staff-block__item-button--recommendation"><img src="../img/edit.svg" alt=""></button>
 					</div>
 				</section>
 			</section>
+            <?php } else { ?>
+                <section class="staff-block">
+					<p class="staff-block__title-none">Пользователь не выбран</p>
+				</section>
+            <?php } ?>
 			<section class="staff-other">
 				<section class="friends-block">
                     <!-- Title and button to search friends -->
@@ -75,22 +137,12 @@ include "../templates/settings.php";
                     </div>
                     <!-- Friends' workout swiper -->
                    <section class="friends-block__cover" navigation="true">
-						<a href="../user/profile.php?user={{ id }}" class="friends-block__item">
-							<img class="friends-block__avatar" src="../img/man_avatar.svg" alt="">
-							<p class="friends-block__name">Иван Иванов</p>
-						</a>
-						<a href="../user/profile.php?user={{ id }}" class="friends-block__item">
-							<img class="friends-block__avatar" src="../img/man_avatar.svg" alt="">
-							<p class="friends-block__name">Иван Иванов</p>
-						</a>
-						<a href="../user/profile.php?user={{ id }}" class="friends-block__item">
-							<img class="friends-block__avatar" src="../img/man_avatar.svg" alt="">
-							<p class="friends-block__name">Иван Иванов</p>
-						</a>
-						<a href="../user/profile.php?user={{ id }}" class="friends-block__item">
-							<img class="friends-block__avatar" src="../img/man_avatar.svg" alt="">
-							<p class="friends-block__name">Иван Иванов</p>
-						</a>
+                       <?php foreach ($sportsmen as $sportsman) { ?>
+                           <a href="../user/doctor.php?user=<?php echo $sportsman->get_id(); ?>" class="friends-block__item">
+                               <img class="friends-block__avatar" src="<?php echo $sportsman->get_avatar($conn); ?>" alt="">
+                               <p class="friends-block__name"><?php echo $sportsman->name." ".$sportsman->surname; ?></p>
+                           </a>
+                       <?php } ?>
 					</section>
 			</section>
 			<section class="staff-other__buttons">
@@ -112,9 +164,11 @@ include "../templates/settings.php";
 		<section class="popup-exercise popup-exercise--add-medicine">
 			<form method="post" class="popup-exercise__content">
 				<button type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
-				<input class="popup-exercise__input-item add-medicine__name" type="text" placeholder="название">
-				<input class="popup-exercise__input-item add-medicine__dose" type="text" placeholder="доза">
-				<button class="button-text popup-exercise__submit-button">Добавить</button>
+				<input name="name" class="popup-exercise__input-item add-medicine__name" type="text" placeholder="название">
+				<input name="caption" class="popup-exercise__input-item add-medicine__dose" type="text" placeholder="доза">
+                <input type="hidden" name="request_name" value="add_medicine">
+                <input type="hidden" name="user_med" value="<?php if (isset($_GET["user"])) echo $_GET["user"]; ?>">
+				<button type="submit" class="button-text popup-exercise__submit-button">Добавить</button>
 			</form>
 		</section>
 
@@ -122,8 +176,10 @@ include "../templates/settings.php";
 		<section class="popup-exercise popup-exercise--treatment-date">
 			<form method="post" class="popup-exercise__content">
 				<button type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
-				<input class="popup-exercise__input-item treatment-date__start" type="text" placeholder="начало">
-				<input class="popup-exercise__input-item treatment-date__end" type="text" placeholder="начало">
+				<input name="start" class="popup-exercise__input-item treatment-date__start" type="date" placeholder="начало">
+				<input name="end" class="popup-exercise__input-item treatment-date__end" type="date" placeholder="конец">
+                <input type="hidden" name="request_name" value="update_period">
+                <input type="hidden" name="user_med" value="<?php if (isset($_GET["user"])) echo $_GET["user"]; ?>">
 				<button class="button-text popup-exercise__submit-button">Сохранить</button>
 			</form>
 		</section>
@@ -132,7 +188,9 @@ include "../templates/settings.php";
 		<section class="popup-exercise popup-exercise--treatment-recommendation">
 			<form method="post" class="popup-exercise__content">
 				<button type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
-				<textarea class="doctor-texterea-item treatment-recommendation__edit" name="" id="" placeholder="рекомендации"></textarea>
+				<textarea class="doctor-texterea-item treatment-recommendation__edit" name="text" id="" placeholder="рекомендации"></textarea>
+                <input type="hidden" name="request_name" value="update_recommendations">
+                <input type="hidden" name="user_med" value="<?php if (isset($_GET["user"])) echo $_GET["user"]; ?>">
 				<button class="button-text popup-exercise__submit-button">Сохранить</button>
 			</form>
 		</section>
@@ -147,7 +205,7 @@ include "../templates/settings.php";
 		let TreatmentDatePopup = document.querySelector('.popup-exercise--treatment-date');
 		let RecommendationPopup = document.querySelector('.popup-exercise--treatment-recommendation');
 		
-		let MedicineEditButtons = document.querySelectorAll('.staff-block__medicines .staff-block__item-button');
+		let MedicineEditButtons = document.querySelectorAll('.staff-block__medicines .staff-block__item-button--edit');
 		let MedicineAddButton = document.querySelector('.staff-block__item-button--add');
 		let TreatmentDateEditButton = document.querySelector('.staff-block__item-button--date');
 		let RecommendationEditButton = document.querySelector('.staff-block__item-button--recommendation');
@@ -157,6 +215,7 @@ include "../templates/settings.php";
 
 		for(let i = 0; i < MedicineEditButtons.length; i++){
 			MedicineEditButtons[i].addEventListener('click', function(){
+				console.log(i)
 				document.querySelector('.edit-medicine__name').value = MedicineNameText[i].innerHTML;
 				document.querySelector('.edit-medicine__dose').value = MedicineDoseText[i].innerHTML;
 				MedicineEditPopup.classList.add("open");

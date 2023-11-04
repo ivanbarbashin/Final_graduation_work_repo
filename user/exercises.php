@@ -36,18 +36,18 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                 <a class="button-text exercises-nav__item" href="exercises.php?my=1">Мои <img src="../img/arrow_white.svg" alt=""></a>
             <?php } ?>
 			<!-- Main search -->
-			<select class="exercises-nav__select" name="exercise_sort" id="">
-				<option value="value1" selected>По умолчанию</option>
-				<option value="value2">Избранные</option>
-				<option value="value3">Рейтинг(возрастание)</option>
-				<option value="value4">Рейтинг(убывание)</option>
-				<option value="value5">Сложность(возрастание)</option>
-				<option value="value6">Сложность(убывание)</option>
+			<select class="exercises-nav__select" name="exercise_sort">
+				<option value="default" selected>По умолчанию</option>
+				<option value="favorites">Избранные</option>
+				<option value="low-rating">Рейтинг(возрастание)</option>
+				<option value="high-rating">Рейтинг(убывание)</option>
+				<option value="low-difficult">Сложность(возрастание)</option>
+				<option value="high-difficult">Сложность(убывание)</option>
 			</select>
 			<!-- Exercise search -->
 			<div class="exercises-nav__search">
 				<input class="exercises-nav__search-input" type="text" placeholder="Искать">
-				<button class="exercises-nav__search-button"><img src="../img/search_black.svg" alt=""></button>
+				<p class="exercises-nav__search-img"><img src="../img/search_black.svg" alt=""></p>
 			</div>
 		</div>
 	</nav>
@@ -56,7 +56,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 		<!-- Exercises and filter block -->
 		<div class="container">
 			<!-- Filter block -->
-			<form class="exercises-filter">
+			<section class="exercises-filter">
 				<!-- Muscle groups filter -->
 				<section class="exercises-filter__muscle-groups">
 					<button class="exercises-filter__button" type="button">Группы мышц <img src="../img/search_arrow.svg" alt=""></button>
@@ -135,7 +135,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 						</div>
 						<div class="exercises-filter__item">
 							<input class="exercises-filter__item-input" type="radio" name="rating_search" id="rating_search5">
-							<label class="exercises-filter__item-label" for="rating_search6">от 1</label>
+							<label class="exercises-filter__item-label" for="rating_search5">от 1</label>
 						</div>
 						<div class="exercises-filter__item">
 							<input class="exercises-filter__item-input" type="radio" name="rating_search" id="rating_search6">
@@ -144,9 +144,9 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 					</div>
 				</section>
 				<!-- Buttons search and clear -->
-				<button class="exercises-filter__search-button" type="submit" class="clear">Искать</button>
-				<button class="exercises-filter__search-button" type="button" class="clear">Очистить</button>
-			</form>
+				<button class="exercises-filter__search-button" type="button" class="clear">Искать</button>
+				<button class="exercises-filter__clear-button" type="button" class="clear">Очистить</button>
+			</section>
 			<!-- Exercises array -->
 			<?php
 			if ($my){
@@ -236,7 +236,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
         }
 
 
-		// Filter buttons
+		// Filter buttons style change
 		let FilterButtonsArr = document.querySelectorAll('.exercises-filter__button');
 		let FilterBlocksArr = document.querySelectorAll('.exercises-filter__content');
 		let FilterButtonsArrowArr = document.querySelectorAll('.exercises-filter__button img');
@@ -255,6 +255,8 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 			});
 		}
 
+		FilterButtonsArr[0].click();
+
 
 		//Difficult
 		let difficultCountArr = document.querySelectorAll('.exercise-item__difficult-number');
@@ -262,7 +264,6 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 
 		for(let i = 0; i < difficultCountArr.length; i++){
 			difficultBlockArr[i].innerHTML = '';
-			console.log(Number(difficultCountArr[i].innerHTML) - 1)
             for(let j = 0; j < 5; j++){
 				let newElem = document.createElement('div');
 				newElem.classList.add('exercise-item__difficult-item');
@@ -277,6 +278,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 
 		// Popup exercises
 		let exercisesButtons = document.querySelectorAll('.exercise-item__rating');
+		let deliteButtons = document.querySelectorAll('.exercise-item__buttons .button-text');
 		let popupExerciseItem = document.querySelector('.popup-exercise .exercise-item');
 		let popupExerciseWindow = document.querySelector('.popup-exercise');
 		let inputExerciseId = document.querySelector('.popup-exercise .exercise_id');
@@ -290,7 +292,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 				let item = exercisesButtons[i].parentElement.parentElement;
 				popupExerciseItem.innerHTML = '';
 				popupExerciseItem.innerHTML = item.innerHTML;
-				inputExerciseId.value = exercisesButtons[i].value;
+				inputExerciseId.value = deliteButtons[i].value;
 				popupExerciseItem.removeChild(popupExerciseItem.lastElementChild);
 
 				popupExerciseWindow.classList.add("open");
@@ -326,7 +328,299 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 			event.isClickWithInModal = true;
 		});
 
-		FilterButtonsArr[0].click();
+
+
+
+
+		// Exercise search
+		const search_input = document.querySelector('.exercises-nav__search-input');
+		search_input.addEventListener('input', function(){
+			SearchItems(search_input.value);
+		});
+
+		// ===SEARCH===
+		let ExerciseNames = document.querySelectorAll('.exercise-item__title');
+
+		function SearchItems(val){
+			val = val.trim().replaceAll(' ', '').toUpperCase();
+			if(val != ''){
+				ExerciseNames.forEach(function(elem){
+					if(elem.innerText.trim().replaceAll(' ', '').toUpperCase().search(val) == -1){
+						let cur_exercise = elem.parentNode;
+						cur_exercise.classList.add('hide');
+					}
+					else{
+						let cur_exercise = elem.parentNode;
+						cur_exercise.classList.remove('hide');
+					}
+				});
+			}
+			//
+			else{
+				ExerciseNames.forEach(function(elem){
+					let cur_exercise = elem.parentNode;
+					cur_exercise.classList.remove('hide');
+				});
+			}
+		}
+
+
+		// ---Filters---
+		// Main
+		let MainFilter = document.querySelector('.exercises-nav__select');
+		let ExercisesArray = document.querySelectorAll('.exercise-item--list');
+		let FavoritesExercises = document.querySelectorAll('.exercise-item__favorite--selected');
+		let ExercisesRating = document.querySelectorAll('.exercise-item__score');
+
+		let ExercisesRatingSorted = []
+		let ExercisesDifficultSorted = []
+
+		for(let i = ExercisesRating.length - 1; i >= 0; i--){
+			let rate = parseFloat(ExercisesRating[i].innerHTML.split(' '));
+			let item = {
+				number: i,
+				rate: rate
+			};
+			ExercisesRatingSorted.push(item);
+		}
+
+		for(let i = difficultCountArr.length - 1; i >= 0; i--){
+			let difficult = parseInt(difficultCountArr[i].innerHTML.split(' '));
+			let item = {
+				number: i,
+				difficult: difficult
+			};
+			ExercisesDifficultSorted.push(item);
+		}
+
+		ExercisesRatingSorted.sort((a, b) => a.rate > b.rate ? 1 : -1);
+		ExercisesDifficultSorted.sort((a, b) => a.difficult > b.difficult ? 1 : -1);
+		
+		let exerciseBlock = document.querySelector('.exercise-block');
+
+		MainFilter.addEventListener('change', function(){
+			ExercisesArray.forEach(function(elem){
+				elem.classList.remove('hide');
+			});
+
+			if(exerciseBlock){
+				exerciseBlock.innerHTML = '';
+				for(let i = 0; i < ExercisesArray.length; i++){
+					exerciseBlock.appendChild(ExercisesArray[i]);
+				}
+			}
+
+			
+
+			if(MainFilter.value == 'default'){
+				ExercisesArray.forEach(function(elem){
+					elem.classList.remove('hide');
+				});
+
+				if(exerciseBlock){
+					exerciseBlock.innerHTML = '';
+					for(let i = 0; i < ExercisesArray.length; i++){
+						exerciseBlock.appendChild(ExercisesArray[i]);
+					}
+				}
+			}
+
+			if(MainFilter.value == 'favorites'){
+				ExercisesArray.forEach(function(elem){
+					elem.classList.add('hide');
+				});
+
+				for(let i = 0; i < FavoritesExercises.length; i++){
+					let cur_exercise = FavoritesExercises[i].parentNode;
+					cur_exercise = cur_exercise.parentNode;
+					cur_exercise.classList.remove('hide');
+				}
+			}
+			if(MainFilter.value == 'low-rating'){
+				for(let i = 0; i < ExercisesRatingSorted.length; i++){
+					if(ExercisesArray[ExercisesRatingSorted[i].number].innerHTML.split(' ') != ''){
+						if(exerciseBlock){
+							exerciseBlock.appendChild(ExercisesArray[ExercisesRatingSorted[i].number]);
+						}
+					}
+				}
+			}
+			if(MainFilter.value == 'high-rating'){
+				for(let i = ExercisesRatingSorted.length - 1; i >= 0; i--){
+					if(ExercisesArray[ExercisesRatingSorted[i].number].innerHTML.split(' ') != ''){
+						if(exerciseBlock){
+							exerciseBlock.appendChild(ExercisesArray[ExercisesRatingSorted[i].number]);
+						}
+					}
+				}
+			}
+			if(MainFilter.value == 'low-difficult'){
+				for(let i = 0; i < ExercisesDifficultSorted.length; i++){
+					if(ExercisesArray[ExercisesDifficultSorted[i].number].innerHTML.split(' ') != ''){
+						if(exerciseBlock){
+							exerciseBlock.appendChild(ExercisesArray[ExercisesDifficultSorted[i].number]);
+						}
+					}
+				}
+			}
+			if(MainFilter.value == 'high-difficult'){
+				for(let i = ExercisesDifficultSorted.length - 1; i >= 0; i--){
+					if(ExercisesArray[ExercisesDifficultSorted[i].number].innerHTML.split(' ') != ''){
+						if(exerciseBlock){
+							exerciseBlock.appendChild(ExercisesArray[ExercisesDifficultSorted[i].number]);
+						}
+					}
+				}
+			}
+		});
+
+
+		// side panel
+		let searchButton = document.querySelector('.exercises-filter__search-button');
+		let clearButton = document.querySelector('.exercises-filter__clear-button');
+		
+		let MuscleGroupInputs = document.querySelectorAll('.exercises-filter__item-input[name="muscle_groups_search"]');
+		let DifficultInputs = document.querySelectorAll('.exercises-filter__item-input[name="difficult_search"]');
+		let RatingInputs = document.querySelectorAll('.exercises-filter__item-input[name="rating_search"]');
+
+		let MuscleGroupLabels = document.querySelectorAll('.exercises-filter__muscle-groups .exercises-filter__item-label');
+		let DifficultLabels = document.querySelectorAll('.exercises-filter__difficult .exercises-filter__item-label');
+		let RatingLabels = document.querySelectorAll('.exercises-filter__rating .exercises-filter__item-label');
+
+		RatingInputs[RatingInputs.length - 1].checked = true;
+
+		let ExercisesMuscleGroups = document.querySelectorAll('.exercise-item__muscle-groups');
+
+
+		searchButton.addEventListener('click', function(){
+			if(exerciseBlock){
+				exerciseBlock.innerHTML = '';
+			}
+			
+			for(let i = 0; i < ExercisesArray.length; i++){
+				let exerciseCheckMuscles = false;
+				let checkCount = 0;
+				for(let j = 0; j < MuscleGroupInputs.length; j++){
+					if(MuscleGroupInputs[j].checked == true && MuscleGroupLabels[j].innerHTML == ExercisesMuscleGroups[i].innerHTML){
+						exerciseCheckMuscles = true;
+					}
+					else if(MuscleGroupInputs[j].checked == true){
+						checkCount += 1;
+					}
+				}
+
+				if(checkCount == 0){
+					exerciseCheckMuscles = true;
+				}
+
+
+				let exerciseCheckDifficult = false;
+				checkCount = 0;
+
+				for(let j = 0; j < DifficultInputs.length; j++){
+					if(DifficultInputs[j].checked == true && DifficultLabels[j].innerHTML == difficultCountArr[i].innerHTML){
+						exerciseCheckDifficult = true;
+					}
+					else if(DifficultInputs[j].checked == true){
+						checkCount += 1;
+					}
+				}
+
+				if(checkCount == 0){
+					exerciseCheckDifficult = true;
+				}
+
+
+				let exerciseCheckRating = false;
+				checkCount = 0;
+
+				for(let j = 0; j < RatingInputs.length; j++){
+					if(RatingInputs[j].checked == true && parseFloat(RatingLabels[j].innerHTML.split(' ')[1]) <= parseFloat(ExercisesRating[i].innerHTML.split(' '))){
+						exerciseCheckRating = true;
+					}
+					else if(RatingInputs[j].checked == true){
+						checkCount += 1;
+					}
+				}
+
+				if(checkCount == 0 || RatingInputs[5].checked == true){
+					exerciseCheckRating = true;
+				}
+
+				if(exerciseCheckMuscles && exerciseCheckDifficult && exerciseCheckRating && exerciseBlock){
+					exerciseBlock.appendChild(ExercisesArray[i]);
+				}
+			}
+		});
+
+
+		// save input values
+		let allFilterInputs = document.querySelectorAll('.exercises-filter__item-input');
+		let allFilterInputsChecked = [];
+
+		// clear filters
+		clearButton.addEventListener('click', function(){
+			for(let i = 0; i < MuscleGroupInputs.length; i++){
+				MuscleGroupInputs[i].checked = false;
+			}
+
+			for(let i = 0; i < DifficultInputs.length; i++){
+				DifficultInputs[i].checked = false;
+			}
+
+			for(let i = 0; i < RatingInputs.length; i++){
+				RatingInputs[i].checked = false;
+			}
+
+			RatingInputs[RatingInputs.length - 1].checked = true;
+			if(exerciseBlock){
+				exerciseBlock.innerHTML = '';
+				for(let i = 0; i < ExercisesArray.length; i++){
+					exerciseBlock.appendChild(ExercisesArray[i]);
+				}
+			}
+			
+
+
+			for(let i = 0; i < allFilterInputsChecked.length; i++){
+				allFilterInputsChecked[i] = false;
+			}
+
+			allFilterInputsChecked[allFilterInputsChecked.length - 1] = true;
+
+			localStorage.setItem('allFilterInputsChecked', allFilterInputsChecked);
+		});
+
+
+		if(localStorage.getItem('allFilterInputsChecked')){
+			allFilterInputsChecked = localStorage.getItem('allFilterInputsChecked').split(',');
+			for(let i = 0; i < allFilterInputsChecked.length; i++){
+				if(allFilterInputsChecked[i] == 'true'){
+					allFilterInputsChecked[i] = true;
+				}
+				else{
+					allFilterInputsChecked[i] = false;
+				}
+			}
+			
+			for(let i = 0; i < allFilterInputs.length; i++){
+				allFilterInputs[i].checked = allFilterInputsChecked[i];
+			}
+		}
+		else{
+			allFilterInputsChecked = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true];
+			localStorage.setItem('allFilterInputsChecked', allFilterInputsChecked);
+		}
+
+		for(let i = 0; i < allFilterInputs.length; i++){
+			allFilterInputs[i].addEventListener('change', function(){
+				for(let i = 0; i < allFilterInputsChecked.length; i++){
+					allFilterInputsChecked[i] = allFilterInputs[i].checked;
+				}
+				localStorage.setItem('allFilterInputsChecked', allFilterInputsChecked);
+			});
+		}
+
 	</script>
 </body>
 </html>

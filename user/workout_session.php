@@ -193,33 +193,95 @@ $cnt_apps = 0;
         // Progress
         let repetDoneButtons = document.querySelectorAll('.exercise-item__done');
         let exercisesLeft = document.querySelectorAll('.workout-session-footer__item span')[0];
-        let AllrepetsLeft = document.querySelectorAll('.workout-session-footer__item span')[1];
-        let exerciseRepetsLeft = document.querySelectorAll('.exercise-item__repetitions-title span');
+        let allrepetsLeft = document.querySelectorAll('.workout-session-footer__item span')[1];
+        let currentRepetsLeft = document.querySelectorAll('.exercise-item__repetitions-title span');
         let exerciseTitle = document.querySelectorAll('.exercise-item__repetitions-title');
-        
+
+        let progressLine = document.querySelector('.workout-session__finish-line');
+        let progressPercents = document.querySelector('.workout-session__percents-number');
+
+        let allRepetsNumber = parseInt(allrepetsLeft.innerHTML);
+
+
+        // save data to local storage
+        if(localStorage.getItem('currentRepetsLeft') && localStorage.getItem('allRepetsNumber')){
+            let array = localStorage.getItem('currentRepetsLeft').split(',');
+            let exercisesLeftNumber = 0;
+            let doneRepetsNumber = parseInt(allrepetsLeft.innerHTML);
+
+            for(let i = 0; i < array.length; i++){
+                if(array[i] == '0'){
+                    exerciseTitle[i].innerHTML = `сделанно`;
+                    exercisesLeftNumber += 1;
+                    repetDoneButtons[i].style.cssText = `display: none;`;
+                }
+                currentRepetsLeft[i].innerHTML = `${parseInt(array[i])}`;
+                doneRepetsNumber -= parseInt(array[i]);
+            }
+
+            allRepetsNumber = parseInt(localStorage.getItem('allRepetsNumber'));
+            
+            allrepetsLeft.innerHTML = `${parseInt(allrepetsLeft.innerHTML) - doneRepetsNumber}`;
+            exercisesLeft.innerHTML = `${parseInt(exercisesLeft.innerHTML) - exercisesLeftNumber}`;
+            progressPercents.innerHTML = `${Math.round((allRepetsNumber - parseInt(allrepetsLeft.innerHTML)) / allRepetsNumber * 100)}%`;
+            progressLine.style.cssText = `width:${Math.round((allRepetsNumber - parseInt(allrepetsLeft.innerHTML)) / allRepetsNumber * 100)}%`;
+
+        }
+        else{
+            let array = [];
+            for(let i = 0; i < currentRepetsLeft.length; i++){
+                array.push(currentRepetsLeft[i].innerHTML);
+            }
+            localStorage.setItem('currentRepetsLeft', array);
+            localStorage.setItem('allRepetsNumber', parseInt(allrepetsLeft.innerHTML));
+        }
+
+            
         for(let i = 0; i < repetDoneButtons.length; i++){
             repetDoneButtons[i].addEventListener('click', function(){
-                let Count = parseInt(exerciseRepetsLeft[i].innerHTML);
-                Count -= 1;
+                let Count = parseInt(currentRepetsLeft[i].innerHTML) - 1;
+
                 if(Count == 0){
                     exerciseTitle[i].innerHTML = `сделанно`;
                     exercisesLeft.innerHTML = `${parseInt(exercisesLeft.innerHTML) - 1}`;
                     repetDoneButtons[i].style.cssText = `display: none;`;
                 }
-                exerciseRepetsLeft[i].innerHTML = `${parseInt(exerciseRepetsLeft[i].innerHTML) - 1}`;
-                AllrepetsLeft.innerHTML = `${parseInt(AllrepetsLeft.innerHTML) - 1}`;
+
+                currentRepetsLeft[i].innerHTML = `${parseInt(currentRepetsLeft[i].innerHTML) - 1}`;
+                allrepetsLeft.innerHTML = `${parseInt(allrepetsLeft.innerHTML) - 1}`;
+                progressPercents.innerHTML = `${Math.round((allRepetsNumber - parseInt(allrepetsLeft.innerHTML)) / allRepetsNumber * 100)}%`;
+                progressLine.style.cssText = `width:${Math.round((allRepetsNumber - parseInt(allrepetsLeft.innerHTML)) / allRepetsNumber * 100)}%`;
+
+
+                let array = [];
+                for(let i = 0; i < currentRepetsLeft.length; i++){
+                    array.push(currentRepetsLeft[i].innerHTML);
+                }
+                localStorage.setItem('currentRepetsLeft', array);
+                console.log(parseInt(exercisesLeft.innerHTML))
+
                 if(parseInt(exercisesLeft.innerHTML) == 0){
                     clearInterval(IntervalTimer);
                     localStorage.setItem("TimeForWork", -1);
                     localStorage.setItem("TimeForRest", -1);
-                    time = 0;
                     localStorage.setItem(`SpendWorkoutTime`, -1);
+                    localStorage.removeItem(`currentRepetsLeft`);
+                    localStorage.removeItem(`allRepetsNumber`);
                     FinsishButton.click();
                 }
             });
-        }
+            }
 
 
+            let maximunExerciseCardHeight = 0;
+            let exerciseCards = document.querySelectorAll('.exercise-item');
+            for(let i = 0; i < exerciseCards.length; i++){
+                maximunExerciseCardHeight = Math.max(maximunExerciseCardHeight, exerciseCards[i].clientHeight);
+            }
+
+            for(let i = 0; i < exerciseCards.length; i++){
+                exerciseCards[i].style.cssText = `height: ${maximunExerciseCardHeight}px;`;
+            }
     </script>
 </body>
 </html>
