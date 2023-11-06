@@ -1,0 +1,32 @@
+<section class="staff-block__header">
+    <img class="staff-block__avatar" src="{{ avatar }}" alt="">
+    <section class="staff-block__info">
+        <div class="staff-block__name">
+            <h1 class="staff-block__name-text">{{ name }} {{ surname }}</h1>
+            <a class="staff-block__profile-link" href=""><img src="../img/profile_black.svg" alt=""></a>
+        </div>
+        <div class="staff-block__buttons">
+            {{ vk_button }}
+            {{ tg_button }}
+            <a href="{{ delete_link }}" class="button-text staff-block__button staff-block__button--delite"><p>Удалить</p> <img src="../img/delete.svg" alt=""></a>
+        </div>
+    </section>
+</section>
+<div class="staff-block__line"></div>
+<section class="comparison-block__physics">
+    <h2 class="staff-block__subtitle">Физические данные</h2>
+    <div class="comparison-block__physics-content">
+        <div class="comparison-block__physics-item">
+            <p class="comparison-block__physics-name">Вес</p>
+            <div class="comparison-block__physics-number">{{ weight }}</div>
+        </div>
+        <div class="comparison-block__physics-item">
+            <p class="comparison-block__physics-name">Рост</p>
+            <div class="comparison-block__physics-number">{{ height }}</div>
+        </div>
+    </div>
+    <div class="staff-block__line"></div>
+    <h2 class="staff-block__subtitle">Последняя контрольная тренировка</h2> 
+    {{ exercises }}
+    <a class="button-text comparison-block__statistic-button" href="progress.php?user={{ id }}"><p>Прогресс спортсмена</p><img src="../img/progress.svg" alt=""></a>
+</section>

@@ -1,0 +1,36 @@
+/* =====ANIMATIONS===== */
+@keyframes welcome_hand_move {
+    0%{
+        bottom: -3%;
+    }
+    25%{
+        bottom: -1%;
+    }
+    50%{
+        bottom: -3%;
+    }
+}
+
+
+@-webkit-keyframes rotate-center {
+    0% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0);
+    }
+    100% {
+        -webkit-transform: rotate(190deg);
+        transform: rotate(180deg);
+    }
+  }
+@keyframes rotate-center {
+    0% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0);
+    }
+    100% {
+        -webkit-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+}
+
+/* ==================== */
