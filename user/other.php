@@ -5,7 +5,7 @@ include "../templates/settings.php";
 <!DOCTYPE html>
 <html lang="en">
 <?php inc_head(); ?>
-<body>
+<body class="other-cover">
     <?php include "../templates/header.php" ?>
 
     <main class="other-block">

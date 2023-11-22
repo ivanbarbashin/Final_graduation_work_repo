@@ -1,12 +1,19 @@
 <?php
-include "templates/func.php";
-include "templates/settings.php";
+// 
+include "templates/func.php"; // Include functions file
+include "templates/settings.php"; // Include settings file
 
+// Redirect the user if already logged in
 $user_data->redirect_logged();
+
+// list of values for registration and login errors
 $error_array = array(
     "reg_fill_all_input_fields" => false,
     "reg_login_is_used" => false,
+    "reg_login_too_short" => false,
     "reg_passwords_are_not_the_same" => false,
+    "reg_password_not_fit" => false,
+    "reg_password_too_short" => false,
     "reg_conn_error" => false,
     "reg_success" => false,
     "too_long_string" => false,
@@ -16,21 +23,24 @@ $error_array = array(
     "log_incorrect_login_or_password" => false
 );
 
+// Process the submission of the registration form
 if (isset($_POST['reg'])){
     $reg_stat = NULL;
     if (isset($_POST['reg_status'])){
         $reg_stat = $_POST['reg_status'];
     }
-    $error_array = $user_data->reg($conn, $_POST['reg_login'], $reg_stat, $_POST['reg_password'], $_POST['reg_password2'], $_POST['reg_name'], $_POST['reg_surname']);
+
+    $error_array = $user_data->reg($conn, $_POST['reg_login'], $reg_stat, $_POST['reg_password'], $_POST['reg_password2'], $_POST['reg_name'], $_POST['reg_surname']); // Call the registration method and update the error array based on registration attempt
 }
 
+// Process the submission of the дщпшт form
 if (isset($_POST['log'])){
-    $error_array = $user_data->authenticate($conn, $_POST['log_login'], $_POST['log_password']);
+    $error_array = $user_data->authenticate($conn, $_POST['log_login'], $_POST['log_password']); // Call the authentication method and update the error array based on login attempt
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head("OpenDoor", true); ?>
+<?php inc_head("OpenDoor", true); // print head.php ?>
 <body class="log-reg">
     <div class="container">
         <!-- Log and reg logo -->
@@ -56,6 +66,7 @@ if (isset($_POST['log'])){
                 <input class="log-form__input" name="log_password" type="password" id="password_entry">
                 <button class="button-text log-form__submit" type="submit" name="log" value="1">Войти</button>
                 <?php
+                // Login warnings
                 log_warning($error_array['log_incorrect_login_or_password'], "Неправильный логин или пароль");
                 log_warning($error_array['log_fill_all_input_fields'], "Заполните все поля");
                 if ($error_array['log_conn_error']){ log_warning($error_array['log_conn_error'], "Ошибка: " . $conn->error); };
@@ -93,6 +104,10 @@ if (isset($_POST['log'])){
                 <input class="reg-form__input" name="reg_password2" type="password" id="check_password">
                 <button class="button-text reg-form__submit" type="submit" name="reg" value="1">Зарегистрироваться</button>
                 <?php
+                // Registration warnings
+                reg_warning($error_array["reg_login_too_short"], "Слишком короткий логин");
+                reg_warning($error_array["reg_password_too_short"], "Слишком короткий пароль");
+                reg_warning($error_array["reg_password_not_fit"], "Пароль должен содержать буквы");
                 reg_warning($error_array['reg_login_is_used'], "Логин занят");
                 reg_warning($error_array['reg_passwords_are_not_the_same'], "Пароли не совпадают");
                 reg_warning($error_array['reg_fill_all_input_fields'], "Заполните все поля");
@@ -104,41 +119,111 @@ if (isset($_POST['log'])){
         </section>
     </div>
 
+
+    <!-- TESTS -->
+    <!-- data for testing resistration -->
+    <!-- <script src="tests/test_registration.js"></script> -->
+    <!-- data for testing login -->
+    <!-- <script src="tests/test_login.js"></script> -->
+
+
     <script>
+        // profile type inputs
+        let regProfileInputsCheked = document.querySelectorAll('.reg-form__profile-input');
+
+        // get localstorage data (all values of registrtion)
+        if(localStorage.getItem('regName')){
+            document.querySelector('.reg-form__input[name="reg_name"]').value = localStorage.getItem('regName');
+        }
+        if(localStorage.getItem('regSurname')){
+            document.querySelector('.reg-form__input[name="reg_surname"]').value = localStorage.getItem('regSurname')
+        }
+        if(localStorage.getItem('regProfileInputs')){
+            let regProfileInputs = localStorage.getItem('regProfileInputs').split(',')
+            for(let i = 0; i < 3; i++){
+                if(regProfileInputs[i] == 'true'){
+                    regProfileInputsCheked[i].checked = true;
+                }
+            }
+        }
+        if(localStorage.getItem('regLogin')){
+            document.querySelector('.reg-form__input[name="reg_login"]').value = localStorage.getItem('regLogin');
+        }
+
+        if(localStorage.getItem('regPassword')){
+            document.querySelector('.reg-form__input[name="reg_password"]').value = localStorage.getItem('regPassword');
+        }
+
+        // checking that the name contains only letters
+        document.querySelector('.reg-form__input[name="reg_name"]').addEventListener('input', function() {
+            this.value = this.value.replace(/[^А-Яа-яЁёA-Za-z]/g, ''); // if the value is not a letter, then we change it to an empty string
+            localStorage.setItem('regName', this.value);
+        });
+
+        // checking that the surname contains only letters
+        document.querySelector('.reg-form__input[name="reg_surname"]').addEventListener('input', function() {
+            this.value = this.value.replace(/[^А-Яа-яЁёA-Za-z]/g, ''); // if the value is not a letter, then we change it to an empty string
+            localStorage.setItem('regSurname', this.value);
+        });
+
+        // setting values of the form inputs in the localstorage
+        document.querySelector('.reg-form__input[name="reg_login"]').addEventListener('input', function() {
+            localStorage.setItem('regLogin', this.value);
+        });
+
+        document.querySelector('.reg-form__input[name="reg_password"]').addEventListener('input', function() {
+            localStorage.setItem('regPassword', this.value);
+        });
+
+        // check profile inputs changes and set data in localstorage
+        for(let i = 0; i < regProfileInputsCheked.length; i++){
+            regProfileInputsCheked[i].addEventListener('change', function(){
+                let regProfileInputs = [false, false, false];
+                for(let j = 0; j < 3; j++){
+                    if(regProfileInputsCheked[j].checked){
+                        regProfileInputs[i] = true;
+                    }
+                }
+                localStorage.setItem('regProfileInputs', regProfileInputs); // set array of radio button values(checked or not) in localstorage
+            })
+        }
 
         // Switch buttons (login or registration)
         let logButton = document.querySelector('.log-reg__switch-button--log');
         let regButton = document.querySelector('.log-reg__switch-button--reg');
-        let logForm = document.querySelector('.log-form');
         let regForm = document.querySelector('.reg-form');
-        let regDoneButton = document.querySelector('.reg-form__warning');
+        let logForm = document.querySelector('.log-form');
+        let regWarning = document.querySelector('.reg-form__warning');
 
 
+        // if the login button was pressed, then hide the registration form and open the login form
         logButton.addEventListener('click', function(){
-            if (logButton.classList.contains('log-reg__switch-button--active') == false){
+            if (logButton.classList.contains('log-reg__switch-button--active') == false){  // checking if the login button is already pressed
                 logButton.classList.add('log-reg__switch-button--active');
                 regButton.classList.remove('log-reg__switch-button--active');
                 logForm.style.cssText = `display: flex;`;
                 regForm.style.cssText = `display: none;`;
-                localStorage.setItem('SwitchRegLogButton', 'log')
+                localStorage.setItem('SwitchRegLogButton', 'log');
             }
         });
 
+         // if the registrtion button was pressed, then hide the login form and open the registration form
         regButton.addEventListener('click', function(){
-            if (regButton.classList.contains('log-reg__switch-button--active') == false){
+            if (regButton.classList.contains('log-reg__switch-button--active') == false){ // checking if the login button is already pressed
                 logButton.classList.remove('log-reg__switch-button--active');
                 regButton.classList.add('log-reg__switch-button--active');
                 regForm.style.cssText = `display: flex;`;
                 logForm.style.cssText = `display: none;`;
-                localStorage.setItem('SwitchRegLogButton', 'reg')
+                localStorage.setItem('SwitchRegLogButton', 'reg');
             }
         });
 
-        if(regDoneButton.length == 0){
+        // if there are no errors, then we transfer them to registration
+        if(!regWarning){
             localStorage.setItem('SwitchRegLogButton', 'log');
         }
 
-        //local storage buttons data
+        // take the data from the localstorage and open the corresponding forms
         if(localStorage.getItem('SwitchRegLogButton')){
             if(localStorage.getItem('SwitchRegLogButton') == 'reg'){
                 regButton.click();
@@ -147,11 +232,9 @@ if (isset($_POST['log'])){
                 logButton.click();
             }
         }
-        else{
+        else{ //if there is no data in the localstorage, set the value of the redirect to login
             localStorage.setItem('SwitchRegLogButton', 'log');
         }
-
-        
     </script>
 </body>
 </html>

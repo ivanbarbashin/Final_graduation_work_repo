@@ -216,9 +216,12 @@ class Control_Workout extends Workout{
         <?php
     }
 
-    public function print_control_exercises($conn){
+    public function print_control_exercises($conn, $user_data=NULL){
         foreach ($this->exercises as $exercise){
-            $exercise->print_control_exercise($conn);
+            if ($user_data != NULL)
+                $exercise->print_control_exercise($conn, $exercise->is_featured($user_data));
+            else
+                $exercise->print_control_exercise($conn);
         }
     }
 }

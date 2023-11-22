@@ -14,7 +14,7 @@ if (empty($_SESSION['c_workout'])){
 if (isset($_POST['featured']))
     $user_data->change_featured($conn, $_POST['featured']);
 
-if (isset($_POST['exercise'])){
+else if (isset($_POST['exercise'])){
     $user_exercise = new User_Exercise($conn, $_POST["exercise"]);
     array_push($_SESSION['c_workout'], $user_exercise);
 }
@@ -163,7 +163,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                         echo "<form method='post' class='exercise-form'>";
                         $exercise = new User_Exercise($conn, $exercise_id);
                         $is_featured = $exercise->is_featured($user_data);
-                        $exercise->print_control_exercise($conn, false, true);
+                        $exercise->print_control_exercise($conn, $is_featured, false, true);
                         echo "</form>";
                     }
                 }
@@ -180,8 +180,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                         echo "<form method='post' class='exercise-form'>";
                         $exercise = new User_Exercise($conn, $item['id']);
                         $is_featured = $exercise->is_featured($user_data);
-                        $is_mine = $exercise->is_mine($user_data);
-                        $exercise->print_control_exercise($conn, false, true);
+                        $exercise->print_control_exercise($conn, $is_featured, false, true);
                         echo "</form>";
                     }
                 }
@@ -253,43 +252,10 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
     }
 
 
-    // Exercise search
-    const search_input = document.querySelector('.exercises-nav__search-input');
-    search_input.addEventListener('input', function(){
-        SearchItems(search_input.value);
-    });
-
-    // ===SEARCH===
-    let ExerciseNames = document.querySelectorAll('.exercise-item__title');
-
-    function SearchItems(val){
-        val = val.trim().replaceAll(' ', '').toUpperCase();
-        if(val != ''){
-            ExerciseNames.forEach(function(elem){
-                if(elem.innerText.trim().replaceAll(' ', '').toUpperCase().search(val) == -1){
-                    let cur_exercise = elem.parentNode;
-                    cur_exercise.classList.add('hide');
-                }
-                else{
-                    let cur_exercise = elem.parentNode;
-                    cur_exercise.classList.remove('hide');
-                }
-            });
-        }
-        //
-        else{
-            ExerciseNames.forEach(function(elem){
-                let cur_exercise = elem.parentNode;
-                cur_exercise.classList.remove('hide');
-            });
-        }
-    }
-
-
     // ---Filters---
     // Main
     let MainFilter = document.querySelector('.exercises-nav__select');
-    let ExercisesArray = document.querySelectorAll('.exercise-item--list');
+    let ExercisesArray = document.querySelectorAll('.exercise-form');
     let FavoritesExercises = document.querySelectorAll('.exercise-item__favorite--selected');
     let ExercisesRating = document.querySelectorAll('.exercise-item__score');
 
@@ -319,7 +285,27 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 
     let exerciseBlock = document.querySelector('.exercise-block');
 
+
+    // side panel
+    let searchButton = document.querySelector('.exercises-filter__search-button');
+    let clearButton = document.querySelector('.exercises-filter__clear-button');
+
+    let MuscleGroupInputs = document.querySelectorAll('.exercises-filter__item-input[name="muscle_groups_search"]');
+    let DifficultInputs = document.querySelectorAll('.exercises-filter__item-input[name="difficult_search"]');
+    let RatingInputs = document.querySelectorAll('.exercises-filter__item-input[name="rating_search"]');
+
+    let MuscleGroupLabels = document.querySelectorAll('.exercises-filter__muscle-groups .exercises-filter__item-label');
+    let DifficultLabels = document.querySelectorAll('.exercises-filter__difficult .exercises-filter__item-label');
+    let RatingLabels = document.querySelectorAll('.exercises-filter__rating .exercises-filter__item-label');
+
+    RatingInputs[RatingInputs.length - 1].checked = true;
+
+    let ExercisesMuscleGroups = document.querySelectorAll('.exercise-item__muscle-groups');
+
+
     MainFilter.addEventListener('change', function(){
+        clearButton.click();
+
         ExercisesArray.forEach(function(elem){
             elem.classList.remove('hide');
         });
@@ -356,7 +342,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 
             for(let i = 0; i < FavoritesExercises.length; i++){
                 let cur_exercise = FavoritesExercises[i].parentNode;
-                cur_exercise = cur_exercise.parentNode;
+                cur_exercise = cur_exercise.parentNode.parentNode;
                 cur_exercise.classList.remove('hide');
             }
         }
@@ -399,24 +385,9 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
     });
 
 
-    // side panel
-    let searchButton = document.querySelector('.exercises-filter__search-button');
-    let clearButton = document.querySelector('.exercises-filter__clear-button');
-
-    let MuscleGroupInputs = document.querySelectorAll('.exercises-filter__item-input[name="muscle_groups_search"]');
-    let DifficultInputs = document.querySelectorAll('.exercises-filter__item-input[name="difficult_search"]');
-    let RatingInputs = document.querySelectorAll('.exercises-filter__item-input[name="rating_search"]');
-
-    let MuscleGroupLabels = document.querySelectorAll('.exercises-filter__muscle-groups .exercises-filter__item-label');
-    let DifficultLabels = document.querySelectorAll('.exercises-filter__difficult .exercises-filter__item-label');
-    let RatingLabels = document.querySelectorAll('.exercises-filter__rating .exercises-filter__item-label');
-
-    RatingInputs[RatingInputs.length - 1].checked = true;
-
-    let ExercisesMuscleGroups = document.querySelectorAll('.exercise-item__muscle-groups');
-
-
     searchButton.addEventListener('click', function(){
+        MainFilter.value = 'default';
+
         if(exerciseBlock){
             exerciseBlock.innerHTML = '';
         }
@@ -529,6 +500,8 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
         for(let i = 0; i < allFilterInputs.length; i++){
             allFilterInputs[i].checked = allFilterInputsChecked[i];
         }
+
+        searchButton.click();
     }
     else{
         allFilterInputsChecked = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true];
@@ -542,6 +515,46 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
             }
             localStorage.setItem('c_allFilterInputsChecked', allFilterInputsChecked);
         });
+    }
+
+
+    // Exercise search
+    const search_input = document.querySelector('.exercises-nav__search-input');
+    search_input.addEventListener('input', function(){
+        SearchItems(search_input.value);
+        searchButton.click();
+    });
+
+    // ===SEARCH===
+    let ExerciseNames = document.querySelectorAll('.exercise-item__title');
+
+    function SearchItems(val){
+        val = val.trim().replaceAll(' ', '').toUpperCase();
+        if(val != ''){
+            ExerciseNames.forEach(function(elem){
+                if(elem.innerText.trim().replaceAll(' ', '').toUpperCase().search(val) == -1){
+                    let cur_exercise = elem.parentNode;
+                    if(cur_exercise){
+                        cur_exercise.classList.add('hide');
+                    }
+                }
+                else{
+                    let cur_exercise = elem.parentNode;
+                    if(cur_exercise){
+                        cur_exercise.classList.remove('hide');
+                    }
+                }
+            });
+        }
+        //
+        else{
+            ExerciseNames.forEach(function(elem){
+                let cur_exercise = elem.parentNode;
+                if(cur_exercise){
+                    cur_exercise.classList.remove('hide');
+                }
+            });
+        }
     }
 </script>
 </body>

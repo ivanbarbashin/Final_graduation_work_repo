@@ -19,11 +19,13 @@ if ($has_doctor){
     $doctor_data["medicines"] = json_decode($doctor_data["medicines"]);
 }
 
+$control_workouts = $user_data->get_control_workouts($conn, $user_data->get_id(), 0);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <?php inc_head(); ?>
-<body>
+<body class="staff-page">
     <?php include "../templates/header.php" ?>
 	<main class="staff-cover">
 		<div class="container">
@@ -59,16 +61,20 @@ if ($has_doctor){
                         <?php } ?>
 				</section>
 				<div class="staff-block__line"></div>
-				<section class="staff-block__item">
-					<h2 class="staff-block__subtitle">Контрольная тренировка</h2>
-					<div class="staff-block__control-workout-nearest">
-						<div class="staff-block__control-workout-info">
-							<p class="staff-block__control-workout-text">Близжайшая:</p>
-							<div class="staff-block__control-workouts-date">12.12.2023</div>
-						</div>
-						<a href="" class="staff-block__button-more"><p>Подробнее</p> <img src="../img/more_white.svg" alt=""></a>
-					</div>
-				</section>
+                <section class="staff-block__item">
+                    <h2 class="staff-block__subtitle">Контрольные тренировки</h2>
+                    <?php if (count($control_workouts) > 0){ ?>
+                        <div class="staff-block__control-workout-nearest">
+                            <div class="staff-block__control-workout-info">
+                                <p class="staff-block__control-workout-text">Ближайшая:</p>
+                                <div class="staff-block__control-workouts-date"><?php echo date("d.m.Y", ($control_workouts[0])->date); ?></div>
+                            </div>
+							<a href="control_workouts.php?user=<?php echo $user_data->get_id(); ?>" class="staff-block__button-more"><p>Подробнее</p> <img src="../img/more_white.svg" alt=""></a>
+                        </div>
+                    <?php } else { ?>
+                        <p class="staff-block__control-none">Нет назначенных контрольных тренировок</p>
+                    <?php } ?>
+                </section>
 				<div class="staff-block__line"></div>
 				<section class="staff-block__item">
 					<h2 class="staff-block__subtitle">Турниры и соревнования</h2>

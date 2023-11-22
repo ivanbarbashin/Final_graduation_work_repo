@@ -107,6 +107,56 @@ body {
     border-bottom: 1px solid rgb(224, 224, 224);
 }
 
+.sub-header{
+    display: none;
+    justify-content: space-between;
+    padding: 0 5vw 10px;
+    color: #000000;
+    border-bottom: 1px solid rgb(224, 224, 224);
+}
+
+
+.sub-header__content-cover{
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 1000;
+}
+
+.sub-header__content-block{
+    background-color: rgb(255, 255, 255);
+    position: relative;
+    padding: 20px 40px;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.sub-header__content-block .header__item{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.sub-header__content-block .header__item img{
+    max-width: 40px;
+    max-height: 40px;
+}
+
+.header__item--close{
+    position: absolute;
+    right: 3%;
+    top: 2%;
+    z-index: 1001;
+}
+
 .header__item{
     text-align: center;
     color: #000000;
@@ -192,8 +242,8 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 0px;
     background-color: #FAFAFA;
+    padding: 0px;
     border-radius: 3px;
     border: 1px solid #CCCCCC;
     box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 0.25);
@@ -374,6 +424,7 @@ body {
 }
 
 .exercise-item__repetitions-title{
+    text-align: center;
     font-size: 25px;
 }
 
@@ -392,6 +443,7 @@ body {
 /* Buttons of exercise */
 .exercise-item__buttons{
     display: flex;
+    align-items: center;
     justify-content: space-around;
     margin-top: auto;
 }
@@ -422,6 +474,7 @@ body {
 .exercise-item__favorite{
     background-color: transparent;
     box-shadow: none;
+    margin-left: 5px;
 }
 
 .exercise-item__favorite:hover{
@@ -641,6 +694,7 @@ body {
 
 /* Workout title */
 .day-workouts__card-name{
+    text-align: center;
     font-size: 21px;
     font-weight: 600;
 }
@@ -729,6 +783,7 @@ body {
 /* Title and button to search friends */
 .friends-block__header{
     font-size: 20px;
+    margin-bottom: 5px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -766,7 +821,7 @@ body {
 .friends-block__slide{
     position: relative;
     display: flex;
-    padding: 0px 20px;
+    padding: 0px 10px;
 }
 
 /* friend item */
@@ -777,6 +832,8 @@ body {
 }
 
 .friends-block__avatar{
+    max-width: 150px;
+    width: 150px;
     border-radius: 50%;
 }
 
@@ -818,7 +875,7 @@ body {
     justify-content: center;
     position: relative;
     padding: 45px 10px 10px 10px;
-    margin: 10px 15px 15px 0px;
+    margin: 10px 0px 15px 0px;
     background-color: rgba(255, 255, 255, 1);
     box-shadow: 5px 5px 0px 0px #9A9A9A;
     border: 1px solid #C6C6C6;
@@ -838,6 +895,14 @@ body {
     font-weight: 500;
     font-size: 20px;
     color: rgba(130, 130, 130, 1);
+}
+
+.workouts-block .container .last-trainings__title{
+    top: 5%;
+}
+
+.staff-cover .last-trainings__title{
+    top: 5%;
 }
 
 /* Trainings content */
@@ -973,7 +1038,7 @@ body {
     text-align: center;
     font-size: 22px;
     background-color: rgba(236, 236, 236, 1);
-    padding: 1px 7px;
+    padding: 1px 3px;
     box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.25);
     float: right;
     margin-left: 10px;
@@ -1090,10 +1155,11 @@ body {
 .popup-exercise__content{
     position: relative;
     display: flex;
+    justify-content: center;
     align-items: center;
     background-color: #ffffff;
     border-radius: 5px;
-    padding: 30px 70px;
+    padding: 40px 70px;
 }
 
 .popup-exercise__content .exercise-item{
@@ -1165,6 +1231,7 @@ body {
 /* ======================USER CARD========================= */
 .user-card{
     max-width: 20vw;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;

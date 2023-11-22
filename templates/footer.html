@@ -17,3 +17,13 @@
 		<p class="footer__about-item">Иван Барбашин</p>
 	</div>
 </footer>
+<script>
+	document.querySelector('.header__item--open').addEventListener('click', function(){
+		document.querySelector('.sub-header__content-cover').style.cssText = 'display: flex;';
+		document.querySelector('.sub-header').style.cssText = 'display: none;';
+	});
+	document.querySelector('.header__item--close').addEventListener('click', function(){
+		document.querySelector('.sub-header__content-cover').style.cssText = 'display: none;';
+		document.querySelector('.sub-header').style.cssText = 'display: flex;';
+	});
+</script>

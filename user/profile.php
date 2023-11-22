@@ -2,7 +2,7 @@
 include "../templates/func.php";
 include "../templates/settings.php";
 $request_flag = false;
-if (isset($_GET["user"])){
+if (isset($_GET["user"]) && $_GET["user"] != $user_data->get_id()){
     $user = new User($conn, $_GET["user"]);
     $user_data->set_staff($conn);
     $request_flag = $user_data->check_request($conn, $user->get_id());
@@ -274,7 +274,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                 <!-- Спортсмен / тренер / врач -->
                 <div class="popup-user__info-item">
                 <p class="popup-user__info-item-name">Тип пользователя</p>
-                    <p class="popup-user__info-item-info"><?php $user->print_status(); ?></p>
+                    <p class="popup-user__info-item-info popup-user__info-item-info--status"><?php $user->print_status(); ?></p>
                 </div>
                <?php switch ($user->get_status()){
                    case "coach":
@@ -358,19 +358,64 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
+        let userDescriptionEditBlock = document.querySelector('.popup-user__description-edit-text');
+        if(userDescriptionEditBlock){
+            userDescriptionEditBlock.addEventListener('input', function(){
+                if(this.value.length > 500){
+                    this.value = this.value.slice(0, 500);
+                }
+            });
+        }
+
+
+        let socialLinksInputs = document.querySelectorAll('.popup-user__input');
+        let editSubmitButton = document.querySelector('.popup-user__save-button');
+
+        if(socialLinksInputs){
+            const telegramRegex = /^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\/[a-zA-Z0-9_]{5,}$/;
+            socialLinksInputs[0].addEventListener('input', function(){
+                if (!telegramRegex.test(socialLinksInputs[0].value.trim()) && !(socialLinksInputs[0].value.trim().length == 0)) {
+                    editSubmitButton.type = 'button';
+                    socialLinksInputs[0].style.cssText = 'border: 1px solid #ff2323';
+                }
+                else{
+                    editSubmitButton.type = 'submit';
+                    socialLinksInputs[0].style.cssText = 'border: 1px solid #7D7D7D;';
+                }
+            });
+
+            const vkRegex = /^(https?:\/\/)?(www\.)?(vk\.com)\/(id[0-9]+|[a-zA-Z0-9_\.]+)$/;
+            socialLinksInputs[1].addEventListener('input', function(){
+                if (!vkRegex.test(socialLinksInputs[1].value.trim()) && !(socialLinksInputs[1].value.trim().length == 0)) {
+                    editSubmitButton.type = 'button';
+                    socialLinksInputs[1].style.cssText = 'border: 1px solid #ff2323';
+                }
+                else{
+                    editSubmitButton.type = 'submit';
+                    socialLinksInputs[1].style.cssText = 'border: 1px solid #7D7D7D;';
+                }
+            });
+        }
+
+        // set profile type in localstorage
+        let profileType = document.querySelector('.popup-user__info-item-info--status');
+        localStorage.setItem('profileType', profileType.innerHTML);
+
+        // choose photo event listener
         avatar_file.addEventListener('click', function(){
             document.querySelector('.preview_cover').style.cssText = `display: flex;`;
         });
 
+        // choose avatar photo logic
         $(document).ready(function () {
-          var croppedImageDataURL; // Переменная для хранения Data URL обрезанного изображения
+          var croppedImageDataURL; // variable Data URL of cropped image
       
-          // При выборе файла для загрузки
+          // When selecting a file to download
           $("#avatar_file").on("change", function (e) {
             var file = e.target.files[0];
             var reader = new FileReader();
       
-            // Чтение файла и отображение его в элементе img#preview
+            // Reading a file and displaying it in the #preview element
             reader.onload = function (event) {
               $("#preview").attr("src", event.target.result);
               initCropper();
@@ -379,27 +424,27 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
             reader.readAsDataURL(file);
           });
       
-          // Инициализация Cropper.js
+          // Initialization Cropper.js
           function initCropper() {
             var image = document.getElementById("preview");
             var cropper = new Cropper(image, {
-                aspectRatio: 1, // Соотношение сторон 1:1 для круглой области обрезки
-                viewMode: 2,    // Позволяет обрезать изображение внутри области обрезки
+                aspectRatio: 1, // The aspect ratio is 1:1 for a circular cropping area
+                viewMode: 2,    // Allows you to crop the image inside the cropping area
 
 
-                // Позиционируем область обрезки в центре
+                // Positioning the cropping area in the center
                 autoCropArea: 0.6,
 
 
-                // Обработка обрезки изображения
+                // Image Cropping Processing
                 crop: function (event) {
-                    // Получение координат и размеров обрезанной области
+                    // Getting the coordinates and dimensions of the cropped area
                     var x = event.detail.x;
                     var y = event.detail.y;
                     var width = event.detail.width;
                     var height = event.detail.height;
 
-                    // Создание canvas с обрезанным изображением
+                    // Creating a canvas with a cropped image
                     var canvas = cropper.getCroppedCanvas({
                         width: width,
                         height: height,
@@ -407,13 +452,13 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                         top: y,
                     });
 
-                    // Преобразование canvas в Data URL изображения
+                    // Converting canvas to Image Data URL
                     croppedImageDataURL = canvas.toDataURL("png");
                 },
             });
         }
       
-          // Обработка сохранения обновленной аватарки
+          // Processing of saving an updated avatar
           $("#saveAvatar").on("click", function () {
             if (croppedImageDataURL) {
                 location.reload()
@@ -426,6 +471,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
           });
         });
 
+        // Event listener for save avatar button
         saveAvatar.addEventListener('click', function(){
             document.querySelector('.preview_cover').style.cssText = `display: none;`;
         });
@@ -434,18 +480,19 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
 
 
 
-        // =========Подробная информация=========
+        // More information(about user) blocks
         let MoreInfoButton = document.querySelector('.user-block__avatar-more');
 
         let UserInfoPopup = document.querySelector('.popup-exercise--user-info');
 
+        // Open popup for editting 
         MoreInfoButton.addEventListener('click', function(){
 			UserInfoPopup.classList.add("open");
 		});
 
 
 
-        // Подробная информация (изменение)
+        // More information(about user) blocks (edit)
         let MoreInfoEditButton = document.querySelector('.popup-user__edit-button');
 
         let UserInfoEditPopup = document.querySelector('.popup-exercise--user-info-edit');
@@ -459,7 +506,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                 UserInfoEditPopup.classList.add("open");
 
                 for(let i = 0; i < socialLinksEdit.length; i++){
-                    if(socialLinks[i].href != ''){
+                    if(socialLinks[i] && socialLinks[i].href != ''){
                         socialLinksEdit[i].value = socialLinks[i].href;
                     }
                 }
@@ -467,11 +514,12 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
         }
 
 
-        // Изменение описания
+        // change user's description
         let DescriptionEditButton = document.querySelector('.user-about__description-button');
 
         let DescriptionPopup = document.querySelector('.popup-exercise--description-edit');
 
+        // open popup window to edit user's description
         if(DescriptionEditButton){
             DescriptionEditButton.addEventListener('click', function(){
                 document.querySelector('.popup-user__description-edit-text').value = document.querySelector('.user-about__description-text').innerHTML;
@@ -480,7 +528,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
         }
 
 
-
+        // buttons to close popup windows
         const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
 		for(let i = 0; i < closeBtn.length; i++){
 			closeBtn[i].addEventListener('click', function(){
@@ -503,4 +551,8 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
 		});
 
     </script>
+
+
+    <!-- testing adding a description -->
+    <!-- <script src="../tests/test_profile_edit_description.js"></script> -->
 </body>

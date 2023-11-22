@@ -36,7 +36,7 @@ class Exercise {
             $cnt++;
             $rating += $value;
         }
-        return round($rating/$cnt, 0);
+        return round($rating/$cnt, 1);
     }
 
     public function set_exercise_data($select_result){
@@ -190,7 +190,7 @@ class User_Exercise extends Exercise {
         echo render($replaces, "../templates/user_exercise.html");
     }
 
-    public function print_control_exercise($conn, $current=false, $construct=false){
+    public function print_control_exercise($conn, $is_featured=false, $current=false, $construct=false){
         if ($this->description == ""){
             $description = "Нет описания";
         }else{
@@ -201,7 +201,7 @@ class User_Exercise extends Exercise {
             $muscle_list .= translate_group($muscle) . " ";
         }
         $muscle_list = str_replace(' ', '-', trim($muscle_list));
-        $inp = '<p class="exercise-item__repetitions-score">Нет данных</p>';
+        $inp = '<div class="exercise-item__repetitions"><p class="exercise-item__repetitions-score">Нет данных</p></div>';
         if ($current) {
             $inp = '<p class="exercise-item__repetitions-score"><input class="exercise-item__input" type="number" placeholder="результат" name="reps[]"></p>';
         }
@@ -210,7 +210,14 @@ class User_Exercise extends Exercise {
             $inp = "<div class='exercise-item__buttons'><input type='hidden' name='exercise' value='".$this->get_id()."'><button class='button-text exercise-item__add'><p>Добавить</p><img src='../img/add.svg' alt=''></button></div>";
 
         if (!$construct && !$current && $this->reps > 0)
-            $inp =  '<p class="exercise-item__repetitions-score">'.$this->reps.'</p>';
+            $inp =  '<div class="exercise-item__repetitions"><p class="exercise-item__repetitions-score">'.$this->reps.'</p></div>';
+        if (!$current)
+            if ($is_featured)
+                $button_featured = '<button class="exercise-item__favorite exercise-item__favorite--selected" name="featured" value="'.$this->get_id().'"><img src="../img/favorite_added.svg" alt=""></button>';
+            else
+                $button_featured = '<button class="exercise-item__favorite" name="featured" value="'.$this->get_id().'"><img src="../img/favorite.svg" alt=""></button>';
+        else
+            $button_featured = '';
 
         $replaces = array(
             "{{ image }}" => $this->get_image($conn),
@@ -219,7 +226,8 @@ class User_Exercise extends Exercise {
             "{{ difficulty }}" => $this->difficulty,
             "{{ muscle }}" => $muscle_list,
             "{{ description }}" => $description,
-            "{{ input }}" => $inp
+            "{{ input }}" => $inp,
+            "{{ button_featured }}" => $button_featured
         );
         echo render($replaces, "../templates/control_exercise.html");
     }

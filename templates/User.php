@@ -1,10 +1,11 @@
 <?php
 
+
+
 class User {
     private $id;
     public $login='';
     private $status="user";
-    public $online=0;
     public $name="Guest";
     public $surname='';
     public $description='';
@@ -75,10 +76,13 @@ class User {
         return $this->sportsmen;
     }
     public function get_sportsmen_advanced($conn){
-        $return_val = array();
+        $return_val = array(); // Initialize an empty array to store advanced sportsmen data
+
+        // Iterate through the list of sportsmen using the get_sportsmen() method
         foreach ($this->get_sportsmen() as $sportsman)
-            array_push($return_val, new User($conn, $sportsman));
-        return $return_val;
+            array_push($return_val, new User($conn, $sportsman)); // Create a new User object for each sportsman using the provided database connection ($conn)
+
+        return $return_val; // Return an array containing advanced User objects for each sportsman
     }
 
     public function __construct($conn, $id=-1, $auth=false){
@@ -94,7 +98,6 @@ class User {
                     $this->avatar = $item['avatar'];
                     $this->password = $item['password'];
                     $this->description = $item['description'];
-                    $this->online = $item['online'];
                     $this->featured_exercises = json_decode($item['featured_exercises']);
                     $this->my_exercises = json_decode($item['my_exercises']);
                     $this->featured_workouts = json_decode($item['featured_workouts']);
@@ -192,16 +195,19 @@ class User {
 
     public function authenticate($conn, $login, $password){
         $error_array = array(
-            "log_conn_error" => false,
-            "log_fill_all_input_fields" => false,
-            "log_incorrect_login_or_password" => false,
             "reg_fill_all_input_fields" => false,
             "reg_login_is_used" => false,
+            "reg_login_too_short" => false,
             "reg_passwords_are_not_the_same" => false,
+            "reg_password_not_fit" => false,
+            "reg_password_too_short" => false,
             "reg_conn_error" => false,
             "reg_success" => false,
             "too_long_string" => false,
-            "adding_stats" => false
+            "adding_stats" => false,
+            "log_conn_error" => false,
+            "log_fill_all_input_fields" => false,
+            "log_incorrect_login_or_password" => false
         );
 
         $login = trim($login);
@@ -222,10 +228,11 @@ class User {
         }
 
         foreach ($log_result as $check_password){
-            $_SESSION["user"] = $check_password['id'];
             if ($check_password['password'] != md5($password)){
                 $error_array['log_incorrect_login_or_password'] = true;
                 return $error_array;
+            }else{
+                $_SESSION["user"] = $check_password["id"];
             }
         }
         header('Location: user/profile.php');
@@ -235,16 +242,19 @@ class User {
     {
         # ---------- collecting errors ---------------
         $error_array = array(
-            "log_conn_error" => false,
-            "log_fill_all_input_fields" => false,
-            "log_incorrect_login_or_password" => false,
             "reg_fill_all_input_fields" => false,
             "reg_login_is_used" => false,
+            "reg_login_too_short" => false,
             "reg_passwords_are_not_the_same" => false,
+            "reg_password_not_fit" => false,
+            "reg_password_too_short" => false,
             "reg_conn_error" => false,
             "reg_success" => false,
             "too_long_string" => false,
-            "adding_stats" => false
+            "adding_stats" => false,
+            "log_conn_error" => false,
+            "log_fill_all_input_fields" => false,
+            "log_incorrect_login_or_password" => false
         );
         # --------- deleting spaces --------------
 
@@ -258,6 +268,18 @@ class User {
 
         if ($login == '' || $password == '' || $name == '' || $surname == '' || $status == NULL) { # checking blank fields
             $error_array['reg_fill_all_input_fields'] = true;
+            return $error_array;
+        }
+        if (mb_strlen($login) < 3){
+            $error_array['reg_login_too_short'] = true;
+            return $error_array;
+        }
+        if (mb_strlen($password) < 8){
+            $error_array['reg_password_too_short'] = true;
+            return $error_array;
+        }
+        if (preg_match('/^[^\p{L}]+$/u', $password)){
+            $error_array['reg_password_not_fit'] = true;
             return $error_array;
         }
         if ($password != $password2) { # checking password equality
@@ -364,17 +386,6 @@ class User {
         $this->update($conn);
     }
 
-    public function change_featured_workouts($conn, $workout_id){
-        $index = array_search($workout_id, $this->featured_workouts);
-        if (is_numeric($index)) {
-            array_splice($this->featured_workouts, $index, 1);
-        }else{
-            array_push($this->featured_workouts, $workout_id);
-        }
-
-        $this->update($conn);
-    }
-
     public function add_exercise($conn, $exercise_id){
         array_push($this->my_exercises, $exercise_id);
         $this->update($conn);
@@ -443,8 +454,12 @@ class User {
                     if ($result = $conn->query($sql)){
                         if ($result->num_rows == 0){
                             echo "<p class='last-trainings__no-workout'>Нет тренировок</p>";
-                        }else{
-                            foreach ($result as $item){
+                        } else {
+                            $rows = $result->fetch_all(MYSQLI_ASSOC);
+                    
+                            $reversed_rows = array_reverse($rows);
+                    
+                            foreach ($reversed_rows as $item){
                                 $workout = new Workout($conn, $item['workout'], date("N", $item['date_completed']));
                                 $workout->set_muscles();
                                 $replacements = array(
@@ -456,7 +471,7 @@ class User {
                                 echo render($replacements, "../templates/workout_history_item.html");
                             }
                         }
-                    }else{
+                    } else {
                         echo "<p>".$conn->error."</p>";
                     }
                 ?>
@@ -632,23 +647,9 @@ class User {
 
     public function get_closest_workout($conn){
         $this->program->set_additional_data($conn, $this->get_id());
-        for ($i = date("N"); $i <= 7; $i++){
-            $time = time() + ($i - 1) * 86400;
-            if ($time > ($this->program->date_start + $this->program->weeks * 604800))
-                return NULL;
-            if ($this->program->program[$i - 1] != 0)
-                return $time;
-        }
-
-        for ($i = 1; $i < date("N"); $i++){
-            $time = time() + ($i - 1) * 86400;
-            if ($time > ($this->program->date_start + $this->program->weeks * 604800))
-                return NULL;
-            if ($this->program->program[$i - 1] != 0){
-                return $time;
-            }
-        }
-
+        for ($i = 0; $i < 7; $i++)
+            if ($this->program->program[(date("N") + $i - 1) % 7] != 0 && ((time() + $i * 86400) < ($this->program->date_start * $this->program->weeks * 604800)))
+                return time() + $i * 86400;
         return NULL;
     }
 

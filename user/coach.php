@@ -91,7 +91,7 @@ if ($is_selected){
 <!DOCTYPE html>
 <html lang="en">
 <?php inc_head(); ?>
-<body>
+<body class="coach-page">
     <?php include "../templates/header.php"; ?>
 
 	<main class="staff-cover">
@@ -117,15 +117,24 @@ if ($is_selected){
 					</section>
 				</section>
 				<div class="staff-block__line"></div>
-                <?php if ($user->set_program($conn)){ ?>
 				<section class="staff-block__item">
 					<h2 class="staff-block__subtitle">Ближайшая тренировка</h2>
 					<div class="staff-block__nearest-workout-content">
-						<div class="staff-block__nearest-workout-date">Тренировок не будет</div>
-						<a href="workout.php" class="staff-block__button-more"><p>Подробнее</p> <img src="../img/more_white.svg" alt=""></a>
+						<div class="staff-block__nearest-workout-date">
+                        <?php
+                            $user->set_program($conn);
+                            if ($user->set_program($conn)) {
+                                $cl_w = $user->get_closest_workout($conn);
+                                if ($cl_w != NULL) {
+                                    echo date("d.m.Y", $cl_w);
+                                } else echo "Тренировок не будет";
+                            }else
+                                echo "Тренировок не будет";
+                        ?>
+                        </div>
+						<a href="my_program.php?user=<?php echo $user->get_id(); ?>" class="staff-block__button-more"><p>Подробнее</p> <img src="../img/more_white.svg" alt=""></a>
 					</div>
 				</section>
-                <?php } ?>
 				<div class="staff-block__line"></div>
 				<section class="staff-block__item">
 					<h2 class="staff-block__subtitle">Цели</h2>
@@ -212,9 +221,9 @@ if ($is_selected){
 			</section>
 			<section class="staff-other__buttons">
 				<?php if ($is_selected){ ?>
-                    <a href="my_program.php" class="button-text staff-other__button"><p>Программа</p> <img src="../img/my_programm.svg" alt=""></a>
-				<?php } ?>
-                <a href="users_comparison.php" class="button-text staff-other__button"><p>Прогресс спортсмена</p> <img src="../img/progress.svg" alt=""></a>
+                    <a href="my_program.php?user=<?php echo $user->get_id(); ?>" class="button-text staff-other__button"><p>Программа</p> <img src="../img/my_programm.svg" alt=""></a>
+                    <a href="progress.php?user=<?php echo $user->get_id(); ?>" class="button-text staff-other__button"><p>Прогресс спортсмена</p> <img src="../img/progress.svg" alt=""></a>
+                <?php }?>
                 <a href="users_comparison.php" class="button-text staff-other__button"><p>Сравнить спортсменов</p> <img src="../img/comparison.svg" alt=""></a>
 			</section>
 		</div>
@@ -237,11 +246,11 @@ if ($is_selected){
 			<form method="post" class="popup-exercise__content">
 				<button type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
 				<input class="popup-exercise__input-item competitions-add__name" type="text" placeholder="название соревнования" name="name">
-				<input class="popup-exercise__input-item popup-exercise__input-item--file competitions-add__file" type="date" name="date">
+				<input class="popup-exercise__input-item competitions-add__date" type="date" name="date">
 				<input class="popup-exercise__input-item competitions-add__link" type="text" placeholder="вставьте ссылку" name="link">
                 <input type="hidden" name="request_name" value="add_competition">
                 <input type="hidden" name="user_med" value="<?php if (isset($_GET["user"])) echo $_GET["user"]; ?>">
-				<button class="button-text popup-exercise__submit-button">Добавить</button>
+				<button class="button-text popup-exercise__submit-button popup-exercise__submit-button--competition">Добавить</button>
 			</form>
 		</section>
 
@@ -251,11 +260,10 @@ if ($is_selected){
 			<form method="post" class="popup-exercise__content">
 				<button type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
 				<input class="popup-exercise__input-item links-add__name" type="text" placeholder="название" name="name">
-				<!--<input class="popup-exercise__input-item popup-exercise__input-item--file links-add__file" type="file">-->
 				<input class="popup-exercise__input-item links-add__link" type="text" placeholder="вставьте ссылку" name="link">
                 <input type="hidden" name="request_name" value="add_info">
                 <input type="hidden" name="user_med" value="<?php if (isset($_GET["user"])) echo $_GET["user"]; ?>">
-				<button class="button-text popup-exercise__submit-button">Добавить</button>
+				<button class="button-text popup-exercise__submit-button popup-exercise__submit-button--useful">Добавить</button>
 			</form>
 		</section>
 	</main>
@@ -263,7 +271,86 @@ if ($is_selected){
     <?php include "../templates/footer.html" ?>
 
 	<script>
-		// Popup workouts
+        let goalAddNameInput = document.querySelector('.goals-add__name');
+        let competetionAddNameInput = document.querySelector('.competitions-add__name');
+        let competetionAddDateInput = document.querySelector('.competitions-add__date');
+        let competetionAddLinkInput = document.querySelector('.competitions-add__link');
+        let addUsefulLinkInput = document.querySelector('.links-add__link');
+        let addUsefulTextInput = document.querySelector('.links-add__name');
+        let competetionAddSubmitButton = document.querySelector('.popup-exercise__submit-button--competition');
+        let usefulTextAddSubmitButton = document.querySelector('.popup-exercise__submit-button--useful');
+
+        goalAddNameInput.addEventListener('input', function(){
+			if(this.value.length > 250){
+				this.value = this.value.slice(0, 250);
+			}
+		});
+
+        competetionAddNameInput.addEventListener('input', function(){
+			if(this.value.length > 250){
+				this.value = this.value.slice(0, 250);
+			}
+		});
+
+        competetionAddSubmitButton.addEventListener('click', function(){
+            if (!competetionAddDateInput.value) {
+				// set today's date
+				const todayDate = new Date();
+				let year = todayDate.getFullYear();
+				let month = todayDate.getMonth() + 1;
+				let day = todayDate.getDate();
+
+				if (month < 10) {
+					month = `0${month}`;
+				}
+				if (day < 10) {
+					day = `0${day}`;
+				}
+
+				const formattedDate = `${year}-${month}-${day}`;
+
+				// set today's date in input
+				competetionAddDateInput.value = formattedDate;
+			}
+		});
+
+
+        addUsefulLinkInput.addEventListener('input', function(){
+			const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+
+            if (!urlRegex.test(this.value) && this.value.length > 0) {
+                usefulTextAddSubmitButton.type = 'button';
+                addUsefulLinkInput.style.cssText = 'border: 1px solid #ff2323';
+            }
+            else{
+                usefulTextAddSubmitButton.type = 'submit';
+                addUsefulLinkInput.style.cssText = 'border: 1px solid #7D7D7D;';
+            }
+		});
+
+        addUsefulTextInput.addEventListener('input', function(){
+			if(this.value.length > 250){
+				this.value = this.value.slice(0, 250);
+			}
+		});
+
+
+        competetionAddLinkInput.addEventListener('input', function(){
+			const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+
+            if (!urlRegex.test(this.value) && this.value.length > 0) {
+                competetionAddSubmitButton.type = 'button';
+                competetionAddLinkInput.style.cssText = 'border: 1px solid #ff2323';
+            }
+            else{
+                competetionAddSubmitButton.type = 'submit';
+                competetionAddLinkInput.style.cssText = 'border: 1px solid #7D7D7D;';
+            }
+		});
+
+
+
+		// variables for coach page
 		let GoalsEditPopup = document.querySelector('.popup-exercise--goals-edit');
 		let GoalsAddPopup = document.querySelector('.popup-exercise--goals-add');
 		let CompetitionsEditPopup = document.querySelector('.popup-exercise--competitions-edit');
@@ -284,20 +371,28 @@ if ($is_selected){
 		let InfoLinkText = document.querySelectorAll('.staff-block__link-button--info-link');
 
 
-		GoalsAddButton.addEventListener('click', function(){
-			GoalsAddPopup.classList.add("open");
-		});
+        // open popup window to edit goals' list
+        if(GoalsAddButton){
+            GoalsAddButton.addEventListener('click', function(){
+                GoalsAddPopup.classList.add("open");
+            });
+        }
 
-
-		CompetitionsAddButton.addEventListener('click', function(){
+        // open popup window to edit competitions' list
+        if(CompetitionsAddButton){
+            CompetitionsAddButton.addEventListener('click', function(){
 			CompetitionsAddPopup.classList.add("open");
 		});
+        }
 
+        // open popup window to edit usefil links' list
+        if(LinksAddButton){
+            LinksAddButton.addEventListener('click', function(){
+                LinksAddPopup.classList.add("open");
+            });
+        }
 
-		LinksAddButton.addEventListener('click', function(){
-			LinksAddPopup.classList.add("open");
-		});
-
+        // buttons to close popup windows
 		const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
 		for(let i = 0; i < closeBtn.length; i++){
 			closeBtn[i].addEventListener('click', function(){

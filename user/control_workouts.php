@@ -2,8 +2,11 @@
 include "../templates/func.php";
 include "../templates/settings.php";
 
-if ($user_data->get_status() != "coach" || empty($_GET["user"]) || !is_numeric($_GET["user"]))
+if ($user_data->get_status() == "doctor" || empty($_GET["user"]) || !is_numeric($_GET["user"]))
     header("Location: coach.php");
+
+if (isset($_POST['featured']))
+    $user_data->change_featured($conn, $_POST['featured']);
 
 $user = new User($conn, $_GET["user"]);
 
@@ -14,7 +17,7 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
 <!DOCTYPE html>
 <html lang="en">
 <?php inc_head(); ?>
-<body> 
+<body class="control-workouts-page"> 
     <?php include "../templates/header.php" ?>
 
 	<main class="workouts-block">
@@ -38,10 +41,10 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
                             <!-- Content of workout -->
                             <section class="workouts-card__content">
                                 <!-- Exercises array -->
-                                <section class="workouts-card__exercises-cover">
+                                <form method="post" class="workouts-card__exercises-cover">
                                     <!-- Exercise items -->
-                                    <?php $workout->print_control_exercises($conn); ?>
-                                </section>
+                                    <?php $workout->print_control_exercises($conn, $user_data); ?>
+                                </form>
                                 <!-- Info about day workout -->
                                 <?php $workout->print_control_workout_info($conn); ?>
                             </section>
@@ -60,7 +63,8 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
 					<h1 class="last-trainings__title">Последние тренировки</h1>
 					<div class="last-trainings__content">
                         <?php if (count($done_workouts) != 0){
-                            foreach ($done_workouts as $done_workout) { $done_workout->set_muscles(); ?>
+                            $reversedDoneWorkouts = array_reverse($done_workouts);
+                            foreach ($reversedDoneWorkouts as $done_workout) { $done_workout->set_muscles(); ?>
 						    <!-- Item -->
                             <section class="last-trainings__card">
                                 <!-- Left part of last exercise item -->
@@ -81,7 +85,7 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
                                     <!-- Muscle groups count of training -->
                                     <div class="last-trainings__item">
                                     <img class="last-trainings__item-img" src="../img/cards.svg" alt="">
-                                    <p class="last-trainings__item-text"><span><?php echo $done_workout->get_groups_amount(); ?></span> группы мышц</p>
+                                    <p class="last-trainings__item-text"><span><?php echo $done_workout->get_groups_amount() - 1; ?></span> группы мышц</p>
                                     </div>
                                     <!-- Button 'Подробнее' for more info about exercise -->
                                     <div class="last-trainings__item">
@@ -97,8 +101,10 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
 				</section>
                 <!-- Buttons favorite workouts and my program -->
                 <section class="workout-other__buttons">
-                    <a class="button-text workout-other__button" href="c_control_workout.php?for=<?php echo $user->get_id(); ?>"><p>Новая</p> <img src="../img/my_programm.svg" alt=""></a>
-                </section>
+                    <?php if ($user_data->get_status() == "coach"){ ?>
+                        <a class="button-text workout-other__button" href="c_control_workout.php?for=<?php echo $user->get_id(); ?>"><p>Новая</p> <img src="../img/my_programm.svg" alt=""></a>
+                    <?php } ?>
+                    </section>
             </section>
         </div>
     </main>
@@ -107,6 +113,11 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
 
 	<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
     <script>
+        // check type of profile for start button style
+        if(localStorage.getItem('profileType') && localStorage.getItem('profileType') != 'Тренер'){
+            document.querySelector('.control-workouts-page .day-workouts__card-button--start').style.cssText = 'display: none;';
+        }
+
         // Button to see exercise info
         let infoExerciseButton = document.querySelectorAll('.exercise-item__info-btn');
         let closeInfoExerciseButton = document.querySelectorAll('.exercise-item__info-close');

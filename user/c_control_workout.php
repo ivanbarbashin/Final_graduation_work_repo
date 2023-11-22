@@ -13,6 +13,9 @@ $user_id = $_GET["for"];
 
 $flag = isset($_SESSION["c_workout"]);
 
+if (isset($_POST['featured']))
+    $user_data->change_featured($conn, $_POST['featured']);
+
 if (isset($_POST["name"]) && isset($_POST["date"])){
     $name = $_POST["name"];
     $loops = $_POST["loops"];
@@ -43,16 +46,17 @@ if (isset($_POST["name"]) && isset($_POST["date"])){
 			<!-- Content of workout -->
 			<section class="workouts-card workouts-card--c">
 				<!-- Exercises array -->
-				<section class="workouts-card__exercises-cover">
+				<form method="post" class="workouts-card__exercises-cover">
 					<!-- Exercise items -->
                     <?php
                     if ($flag) {
                         foreach ($_SESSION["c_workout"] as $exercise){
-                            $exercise->print_control_exercise($conn, false);
+                            $is_featured = $exercise->is_featured($user_data);
+                            $exercise->print_control_exercise($conn, $is_featured, false);
                         }
                     }
                     ?>
-				</section>
+				</form>
 				<!-- Info about day workout -->
 				<section class="workouts-card__info">
 					<!-- Muscle groups -->
@@ -78,7 +82,7 @@ if (isset($_POST["name"]) && isset($_POST["date"])){
 					</div>
 					<div class="c-workout__info-header-item">
 						<h1 class="c-workout__info-title">Дата:</h1>
-						<input class="c-workout__info-name" type="date" placeholder="Название тренировки" name="date">
+						<input class="c-workout__info-name" type="date" name="date">
 					</div>
 				</section>
 				<button class="button-text c-workout__days-add" type="submit"><p>Добавить тренировку</p> <img src="../img/add.svg" alt=""></button>
@@ -90,6 +94,8 @@ if (isset($_POST["name"]) && isset($_POST["date"])){
 
     <?php include "../templates/footer.html" ?>
 	<script>
+
+
 		// Button to see exercise info
         let	InfoExerciseButton = document.querySelectorAll('.exercise-item__info-btn');
         let closeInfoExerciseButton = document.querySelectorAll('.exercise-item__info-close');
@@ -108,13 +114,57 @@ if (isset($_POST["name"]) && isset($_POST["date"])){
 
 
         // Button submit
-		let addToPragramButton = document.querySelector('.c-workout__days-add');
 		let workoutNameInput = document.querySelector('.c-workout__info-name');
+		let dateWokoutInput = document.querySelector('.c-workout__info-name[type=date]');
+		let addToPragramButton = document.querySelector('.c-workout__days-add');
+
+		let exerciseItemsArray = document.querySelectorAll('.exercise-item');
+		if(!exerciseItemsArray.length){
+			addToPragramButton.type = 'button';
+		}
+
+		// if values are empty and button is clicked
 		addToPragramButton.addEventListener('click', function(){
 			if(workoutNameInput.value == ''){
 				workoutNameInput.value = "Без названия";
 			}
+			if (!dateWokoutInput.value) {
+				// set today's date
+				const todayDate = new Date();
+				let year = todayDate.getFullYear();
+				let month = todayDate.getMonth() + 1;
+				let day = todayDate.getDate();
+
+				if (month < 10) {
+					month = `0${month}`;
+				}
+				if (day < 10) {
+					day = `0${day}`;
+				}
+
+				const formattedDate = `${year}-${month}-${day}`;
+
+				// set today's date in input
+				dateWokoutInput.value = formattedDate;
+			}
 		});
+
+
+		//Difficult
+		let difficultCountArr = document.querySelectorAll('.exercise-item__difficult-number');
+		let difficultBlockArr = document.querySelectorAll('.exercise-item__difficult');
+
+		for(let i = 0; i < difficultCountArr.length; i++){
+			difficultBlockArr[i].innerHTML = '';
+			for(let j = 0; j < 5; j++){
+				let newElem = document.createElement('div');
+				newElem.classList.add('exercise-item__difficult-item');
+				if(j > Number(difficultCountArr[i].innerHTML) - 1){
+					newElem.classList.add('exercise-item__difficult-item--disabled');
+				}
+				difficultBlockArr[i].appendChild(newElem);
+			}
+		}
 	</script>
 </body>
 </html>

@@ -1,12 +1,12 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Including functions file
+include "../templates/settings.php"; // Including settings file
 
-$weekday = date("N") - 1;
-$user_data->set_program($conn);
-$workout_id = $user_data->program->program[$weekday];
-$workout = new Workout($conn, $workout_id, $weekday);
-$cnt_apps = 0;
+$weekday = date("N") - 1; // Getting the current day of the week as a number (1 for Monday, 7 for Sunday)
+$user_data->set_program($conn); // Setting the program for the user based on the connection to the database
+$workout_id = $user_data->program->program[$weekday]; // Getting the workout ID for the current weekday from the user's program
+$workout = new Workout($conn, $workout_id, $weekday); // Creating a new Workout object based on the fetched workout ID and the weekday
+$cnt_apps = 0; // count of approaches
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +20,7 @@ $cnt_apps = 0;
         <!-- Progress of test(in percents) -->
         <section class="workout-session__progress">
             <!-- Progress line and count of percent -->
-            <h2 class="workout-session__progress-title">Progress</h2>
+            <h2 class="workout-session__progress-title">Прогресс</h2>
             <div class="workout-session__progress-percents">
                 <p class="workout-session__percents-number">0%</p>
                 <div class="workout-session__finish-line"></div>
@@ -44,24 +44,22 @@ $cnt_apps = 0;
                 </section>
             </div>
             <swiper-container class="session-exercises__swiper" pagination="true" pagination-clickable="true" navigation="true" space-between="30" loop="true">
-                <!-- for loop -->
-                <?php for ($i = 0; $i < $workout->loops; $i++) { foreach ($workout->exercises as $exercise){?>
+                <?php for ($i = 0; $i < $workout->loops; $i++) { foreach ($workout->exercises as $exercise){ // for each exercise, we output a slide ?>
                 <swiper-slide class="session-exercises__slide">
                     <?php
-                    $cnt_apps += $exercise->approaches;
-                    $exercise->print_it($conn, false, false, false, true);
-                    # echo render($replaces, "../templates/user_exercise.html");
+                    $cnt_apps += $exercise->approaches; // increasing the number of approaches
+                    $exercise->print_it($conn, false, false, false, true); // Printing the exercise details
                     ?>
                 </swiper-slide>
                 <?php } } ?>
             </swiper-container>
         </div>
-    </main>
+    </main> 
 
     <footer class="workout-session-footer">
         <h1 class="workout-session-footer__title">Осталось:</h1>
-        <h2 class="workout-session-footer__item"><span><?php echo count($workout->exercises); ?></span> упражнений</h2>
-        <h2 class="workout-session-footer__item"><span><?php echo $cnt_apps; ?></span> подходов</h2>
+        <h2 class="workout-session-footer__item"><span><?php echo count($workout->exercises); //number of exercises ?></span> упражнений(ия)</h2>
+        <h2 class="workout-session-footer__item"><span><?php echo $cnt_apps; //number of approaches ?></span> подходов(a)</h2>
         <form method="post" action="end_workout.php">
             <input class="workout-session-footer__input" name="time" type="hidden" value="0">
             <button class="button-text workout-session-footer__button">Завершить</button>
@@ -77,24 +75,24 @@ $cnt_apps = 0;
         let infoBlock = document.querySelectorAll('.exercise-item__info-content');
 
         for(let i = 0; i < infoExerciseButton.length; i++){
-            infoExerciseButton[i].addEventListener('click', function(){
+            infoExerciseButton[i].addEventListener('click', function(){ // open exercise info
                 infoBlock[i].style.cssText = `top: -1%;`;
             });
         }
         for(let i = 0; i < closeInfoExerciseButton.length; i++){
-            closeInfoExerciseButton[i].addEventListener('click', function(){
+            closeInfoExerciseButton[i].addEventListener('click', function(){ // close exercise info
                 infoBlock[i].style.cssText = `top: -101%;`;
             });
         }
 
 
-        //Difficult
+        //Difficult for exercises
 		let difficultCountArr = document.querySelectorAll('.exercise-item__difficult-number');
 		let difficultBlockArr = document.querySelectorAll('.exercise-item__difficult');
 
 		for(let i = 0; i < difficultCountArr.length; i++){
 			difficultBlockArr[i].innerHTML = '';
-            for(let j = 0; j < 5; j++){
+            for(let j = 0; j < 5; j++){ // creating circles of difficulty for the exercise card
 				let newElem = document.createElement('div');
 				newElem.classList.add('exercise-item__difficult-item');
 				if(j > Number(difficultCountArr[i].innerHTML) - 1){
@@ -106,7 +104,7 @@ $cnt_apps = 0;
 
 
     
-        // Timer
+        // Timer variables
         let TimeForWork = localStorage.getItem('TimeForWork') * 60;
         let TimeForRest = localStorage.getItem('TimeForRest') * 60;
         let currentWorkTime = 0;
@@ -117,8 +115,9 @@ $cnt_apps = 0;
 
         let workoutSessionInputTime = document.querySelector('.workout-session-footer__input');
 
+        // get data for timer from localStorage
         if(localStorage.getItem(`SpendWorkoutTime`) && localStorage.getItem(`SpendWorkoutTime`) != -1){
-            time = localStorage.getItem(`SpendWorkoutTime`);
+            time = localStorage.getItem(`SpendWorkoutTime`); //get time
             workoutSessionInputTime.value = time;
 
             let minutes = Math.floor(time / 60);
@@ -129,28 +128,28 @@ $cnt_apps = 0;
             if (minutes < 10){
                 minutes = '0' + minutes;
             }
-            timer.innerHTML = `${minutes}:${seconds}`;
+            timer.innerHTML = `${minutes}:${seconds}`; // set current time
 
             if (localStorage.getItem(`Period`) == 'Rest'){
-                timer.style.cssText = 'background-color: rgb(1, 221, 34); box-shadow: 0px 3px 0px rgba(0, 94, 13, 1);';
+                timer.style.cssText = 'background-color: rgb(1, 221, 34); box-shadow: 0px 3px 0px rgba(0, 94, 13, 1);'; // change styles if rest
             }
             else{
-                timer.style.cssText = 'color: #ffffff; background-color: rgba(0, 94, 13, 1); box-shadow: 0px 3px 0px rgb(1, 221, 34);';
+                timer.style.cssText = 'color: #ffffff; background-color: rgba(0, 94, 13, 1); box-shadow: 0px 3px 0px rgb(1, 221, 34);'; // change styles if work
             }
         }
-        else{
+        else{ // if localStorage does not contain variables
             localStorage.setItem(`SpendWorkoutTime`, 0);
             localStorage.setItem(`Period`, 'Work');
-            time += 1;
         }
 
 
-        let IntervalTimer = setInterval(UpdateTime, 1000);
+        let IntervalTimer = setInterval(UpdateTime, 1000); // setting the interval for the timer
 
-        workoutSessionInputTime.value = time;
+        workoutSessionInputTime.value = time; // set value for data base
         localStorage.setItem(`SpendWorkoutTime`, time);
 
-        FinsishButton.addEventListener('click', function(){
+        // finish button event listener
+        FinsishButton.addEventListener('click', function(){ // if the finish button is pressed, then we stop the timer and change the locastorage variables
             localStorage.setItem("TimeForWork", -1);
             localStorage.setItem("TimeForRest", -1);
             localStorage.removeItem(`currentRepetsLeft`);
@@ -161,7 +160,23 @@ $cnt_apps = 0;
         });
 
         
+        // Update value of timer
         function UpdateTime(){
+            time++; // add one second for timer
+            workoutSessionInputTime.value = time; // set value for data base
+            localStorage.setItem(`SpendWorkoutTime`, time); // set value of timer to localstorage
+
+            if(TimeForWork >= 0 && TimeForRest >= 0){ // If time has come to rest
+                if (time - (Math.floor(time / (TimeForWork + TimeForRest)) * (TimeForWork + TimeForRest)) == TimeForWork){
+                    timer.style.cssText = 'background-color: rgb(1, 221, 34); box-shadow: 0px 3px 0px rgba(0, 94, 13, 1);';
+                    localStorage.setItem(`Period`, 'Rest');
+                }
+                else if (time % (TimeForWork + TimeForRest) == 0){ // If time has come to work
+                    timer.style.cssText = 'color: #ffffff; background-color: rgba(0, 94, 13, 1); box-shadow: 0px 3px 0px rgb(1, 221, 34);';
+                    localStorage.setItem(`Period`, 'Work');
+                }
+            }
+ 
             let minutes = Math.floor(time / 60);
             let seconds = time % 60;
             if (seconds < 10){
@@ -171,30 +186,13 @@ $cnt_apps = 0;
                 minutes = '0' + minutes;
             }
 
-            timer.innerHTML = `${minutes}:${seconds}`;
-
-            time++;
-            workoutSessionInputTime.value = time;
-            localStorage.setItem(`SpendWorkoutTime`, time);
-
-            if(TimeForWork >= 0 && TimeForRest >= 0){
-                if (time - (Math.floor(time / (TimeForWork + TimeForRest)) * (TimeForWork + TimeForRest)) - 1 == TimeForWork){
-                    console.log(time)
-                    timer.style.cssText = 'background-color: rgb(1, 221, 34); box-shadow: 0px 3px 0px rgba(0, 94, 13, 1);';
-                    localStorage.setItem(`Period`, 'Rest');
-                }
-                else if ((time - 1) % (TimeForWork + TimeForRest) == 0){
-                    console.log(time)
-                    timer.style.cssText = 'color: #ffffff; background-color: rgba(0, 94, 13, 1); box-shadow: 0px 3px 0px rgb(1, 221, 34);';
-                    localStorage.setItem(`Period`, 'Work');
-                }
-            }
+            timer.innerHTML = `${minutes}:${seconds}`; // set value(minutes and seconds) to visual block
             
         }
 
 
 
-        // Progress
+        // Progress of workout (variables)
         let repetDoneButtons = document.querySelectorAll('.exercise-item__done');
         let exercisesLeft = document.querySelectorAll('.workout-session-footer__item span')[0];
         let allrepetsLeft = document.querySelectorAll('.workout-session-footer__item span')[1];
@@ -207,12 +205,13 @@ $cnt_apps = 0;
         let allRepetsNumber = parseInt(allrepetsLeft.innerHTML);
 
 
-        // save data to local storage
+        // set data of workout progress to blocks
         if(localStorage.getItem('currentRepetsLeft') && localStorage.getItem('allRepetsNumber')){
             let array = localStorage.getItem('currentRepetsLeft').split(',');
             let exercisesLeftNumber = 0;
             let doneRepetsNumber = parseInt(allrepetsLeft.innerHTML);
 
+            // set repets of exercises
             for(let i = 0; i < array.length; i++){
                 if(array[i] == '0'){
                     exerciseTitle[i].innerHTML = `сделанно`;
@@ -223,6 +222,7 @@ $cnt_apps = 0;
                 doneRepetsNumber -= parseInt(array[i]);
             }
 
+            // set progress
             allRepetsNumber = parseInt(localStorage.getItem('allRepetsNumber'));
             
             allrepetsLeft.innerHTML = `${parseInt(allrepetsLeft.innerHTML) - doneRepetsNumber}`;
@@ -235,6 +235,7 @@ $cnt_apps = 0;
 
         }
         else{
+            // set data of repets to localstorage
             let array = [];
             for(let i = 0; i < currentRepetsLeft.length; i++){
                 array.push(currentRepetsLeft[i].innerHTML);
@@ -243,17 +244,18 @@ $cnt_apps = 0;
             localStorage.setItem('allRepetsNumber', parseInt(allrepetsLeft.innerHTML));
         }
 
-            
+        // workout progress logic
         for(let i = 0; i < repetDoneButtons.length; i++){
             repetDoneButtons[i].addEventListener('click', function(){
-                let Count = parseInt(currentRepetsLeft[i].innerHTML) - 1;
+                let Count = parseInt(currentRepetsLeft[i].innerHTML) - 1; // count of exercise repets
 
-                if(Count == 0){
+                if(Count == 0){ // if count == 0 then exercise if done
                     exerciseTitle[i].innerHTML = `сделанно`;
                     exercisesLeft.innerHTML = `${parseInt(exercisesLeft.innerHTML) - 1}`;
                     repetDoneButtons[i].style.cssText = `display: none;`;
                 }
 
+                // set progress to visual blocks
                 currentRepetsLeft[i].innerHTML = `${parseInt(currentRepetsLeft[i].innerHTML) - 1}`;
                 allrepetsLeft.innerHTML = `${parseInt(allrepetsLeft.innerHTML) - 1}`;
                 progressPercents.innerHTML = `${Math.round((allRepetsNumber - parseInt(allrepetsLeft.innerHTML)) / allRepetsNumber * 100)}%`;
@@ -263,11 +265,12 @@ $cnt_apps = 0;
                 }
 
 
+                // set localstorage data
                 let array = [];
                 for(let i = 0; i < currentRepetsLeft.length; i++){
                     array.push(currentRepetsLeft[i].innerHTML);
                 }
-                localStorage.setItem('currentRepetsLeft', array);
+                localStorage.setItem('currentRepetsLeft', array); 
 
                 if(parseInt(exercisesLeft.innerHTML) == 0){
                     clearInterval(IntervalTimer);
@@ -286,11 +289,11 @@ $cnt_apps = 0;
             let maximunExerciseCardHeight = 0;
             let exerciseCards = document.querySelectorAll('.exercise-item');
             for(let i = 0; i < exerciseCards.length; i++){
-                maximunExerciseCardHeight = Math.max(maximunExerciseCardHeight, exerciseCards[i].clientHeight);
+                maximunExerciseCardHeight = Math.max(maximunExerciseCardHeight, exerciseCards[i].clientHeight); // find maximum height of exercise card
             }
 
             for(let i = 0; i < exerciseCards.length; i++){
-                exerciseCards[i].style.cssText = `height: ${maximunExerciseCardHeight}px;`;
+                exerciseCards[i].style.cssText = `height: ${maximunExerciseCardHeight}px;`; // set maximum height of exercise card
             }
     </script>
 </body>

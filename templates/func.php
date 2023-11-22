@@ -257,13 +257,13 @@ function print_goal($conn, $id, $user_id, $edit=true){
                 if ($edit)
                     $done = '<a class="staff-block__goal-button--text" href="goal_done.php?id='.$id.'&val=0&user='.$user_id.'">Не выполнена</a>';
                 else
-                    $done = '<p>Выполнена</p>';
+                    $done = '';
             }else{
                 $checkmark = "../img/blue_question_mark.svg";
                 if ($edit)  
                     $done = '<a class="staff-block__goal-button--text" href="goal_done.php?id='.$id.'&val=1&user='.$user_id.'">Выполнена</a>';
                 else
-                    $done = '<p>Не выполнена</p>';
+                    $done = '';
             }
             if ($edit)
                 $delete = '<a href="delete_coach_info.php?item=goal&user='.$user_id.'&id='.$id.'" class="button-img staff-block__item-button"><img src="../img/delete.svg" alt=""></a>';

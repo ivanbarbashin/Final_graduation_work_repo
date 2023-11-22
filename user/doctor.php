@@ -64,7 +64,7 @@ if ($is_selected){
 <!DOCTYPE html>
 <html lang="en">
 <?php inc_head(); ?>
-<body>
+<body class="doctor-page">
     <?php include "../templates/header.php" ?>
 
 	<main class="staff-cover">
@@ -200,7 +200,31 @@ if ($is_selected){
     <?php include "../templates/footer.html" ?>
 
 	<script>
-		// Popup workouts
+		let medicineAddNameInput = document.querySelector('.add-medicine__name');
+		let medicineAddDoseInput = document.querySelector('.add-medicine__dose');
+		
+		medicineAddNameInput.addEventListener('input', function(){
+			if(this.value.length > 90){
+				this.value = this.value.slice(0, 90);
+			}
+		});
+
+		medicineAddDoseInput.addEventListener('input', function(){
+			if(this.value.length > 70){
+				this.value = this.value.slice(0, 70);
+			}
+		});
+
+
+		let recommendationTextarea = document.querySelector('.treatment-recommendation__edit');
+		recommendationTextarea.addEventListener('input', function(){
+			if(this.value.length > 5000){
+				this.value = this.value.slice(0, 5000);
+			}
+		});
+
+
+		// Popup window for doctor page
 		let MedicineEditPopup = document.querySelector('.popup-exercise--edit-medicine');
 		let MedicineAddPopup = document.querySelector('.popup-exercise--add-medicine');
 		let TreatmentDatePopup = document.querySelector('.popup-exercise--treatment-date');
@@ -214,32 +238,36 @@ if ($is_selected){
 		let MedicineNameText = document.querySelectorAll('.staff-block__medicine-name');
 		let MedicineDoseText = document.querySelectorAll('.staff-block__medicine-dose');
 
+		// open popup window to edit medicines' list
 		for(let i = 0; i < MedicineEditButtons.length; i++){
 			MedicineEditButtons[i].addEventListener('click', function(){
-				console.log(i)
 				document.querySelector('.edit-medicine__name').value = MedicineNameText[i].innerHTML;
 				document.querySelector('.edit-medicine__dose').value = MedicineDoseText[i].innerHTML;
 				MedicineEditPopup.classList.add("open");
 			});
 		}
 
+		// popuw window to add medicine
 		MedicineAddButton.addEventListener('click', function(){
 			MedicineAddPopup.classList.add("open");
 		});
 
 		let TreatmentDateText = document.querySelectorAll('.staff-block__treatment-date-item');
 
+		// popup window to edit treatment date
 		TreatmentDateEditButton.addEventListener('click', function(){
 			document.querySelector('.treatment-date__start').value = TreatmentDateText[0].innerHTML;
 			document.querySelector('.treatment-date__end').value = TreatmentDateText[1].innerHTML;
 			TreatmentDatePopup.classList.add("open");
 		});
 
+		// popup window to edit recommendation
 		RecommendationEditButton.addEventListener('click', function(){
 			document.querySelector('.treatment-recommendation__edit').value = document.querySelector('.staff-block__treatment-recommendation').innerHTML;
 			RecommendationPopup.classList.add("open");
 		});
 
+		// buttons to close popup windows
 		const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
 		for(let i = 0; i < closeBtn.length; i++){
 			closeBtn[i].addEventListener('click', function(){
@@ -262,8 +290,6 @@ if ($is_selected){
 		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
 			event.isClickWithInModal = true;
 		});
-
-
 	</script>
 </body>
 </html>

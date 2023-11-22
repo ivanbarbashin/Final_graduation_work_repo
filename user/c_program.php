@@ -60,24 +60,66 @@ if (isset($_POST["weeks"]) && $_POST["weeks"] > 0){
 	<main class="c-program">
 		<div class="container">
 			<section class="day-workouts" navigation="true">
-				<?php
-                $workout_array = array();
-                    for($i = 0; $i < 7; $i++){
-						$workout = new Workout($conn, $_SESSION["program"][$i], $i);
-                        if ($_SESSION["program"][$i] != 0){
-                            $flag = true;
-                            foreach ($workout_array as $item){
-                                if ($item->get_id() == $workout->get_id()){
-                                    $flag = false;
-                                    break;
+                <section class="day-workouts__block--adaptive">
+                    <?php
+                    $workout_array = array();
+                        for($i = 0; $i < 4; $i++){
+                            $workout = new Workout($conn, $_SESSION["program"][$i], $i);
+                            if ($_SESSION["program"][$i] != 0){
+                                $flag = true;
+                                foreach ($workout_array as $item){
+                                    if ($item->get_id() == $workout->get_id()){
+                                        $flag = false;
+                                        break;
+                                    }
                                 }
+                                if ($flag)
+                                    array_push($workout_array, $workout);
                             }
-                            if ($flag)
-                                array_push($workout_array, $workout);
-                        }
-                        $workout->set_muscles();
-                        $workout->print_workout_info_block($i, 0, $user_data->get_id());
-                    } ?>
+                            $workout->set_muscles();
+                            $workout->print_workout_info_block($i, 0, $user_data->get_id());
+                        } ?>
+                </section>
+                <section class="day-workouts__block--adaptive">
+                    <?php
+                    $workout_array = array();
+                        for($i = 4; $i < 7; $i++){
+                            $workout = new Workout($conn, $_SESSION["program"][$i], $i);
+                            if ($_SESSION["program"][$i] != 0){
+                                $flag = true;
+                                foreach ($workout_array as $item){
+                                    if ($item->get_id() == $workout->get_id()){
+                                        $flag = false;
+                                        break;
+                                    }
+                                }
+                                if ($flag)
+                                    array_push($workout_array, $workout);
+                            }
+                            $workout->set_muscles();
+                            $workout->print_workout_info_block($i, 0, $user_data->get_id());
+                        } ?>
+                </section>
+                <section class="day-workouts__block">
+                    <?php
+                    $workout_array = array();
+                        for($i = 0; $i < 7; $i++){
+                            $workout = new Workout($conn, $_SESSION["program"][$i], $i);
+                            if ($_SESSION["program"][$i] != 0){
+                                $flag = true;
+                                foreach ($workout_array as $item){
+                                    if ($item->get_id() == $workout->get_id()){
+                                        $flag = false;
+                                        break;
+                                    }
+                                }
+                                if ($flag)
+                                    array_push($workout_array, $workout);
+                            }
+                            $workout->set_muscles();
+                            $workout->print_workout_info_block($i, 0, $user_data->get_id());
+                        } ?>
+                    </section>
 			</section>
 			<section class="c-program__create">
 				<section class="c-program__workouts">
@@ -134,87 +176,6 @@ if (isset($_POST["weeks"]) && $_POST["weeks"] > 0){
 			</section>
 		</div>
 
-		<section class="popup-exercise popup-exercise--c-workouts">
-			<section class="popup-exercise__content">
-				<button class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
-				<!-- Тренировка -->
-				<section class="workouts-card workouts-card--c">
-					<!-- Exercises array -->
-					<section class="workouts-card__exercises-cover">
-						<!-- Exercise items -->
-						<?php
-						if ($flag) {
-							foreach ($_SESSION["workout"] as $exercise){
-								$exercise->print_it($conn);
-							}
-						}
-						?>
-					</section>
-					<!-- Info about day workout -->
-					<section class="workouts-card__info">
-						<!-- Muscle groups -->
-						<?php print_workout_info_function($_SESSION["workout"]); ?>
-						<!-- Decorative line -->
-						<div class="workouts-card__info-line"></div>
-						<!-- Exercise info -->
-						<p class="workouts-card__item">Упражнений: <span><?php if ($flag) echo count($_SESSION["workout"]); else echo 0; ?></span></p>
-						<!-- Decorative line -->
-						<div class="workouts-card__info-line"></div>
-						<!-- Buttons edit and start -->
-						<div class="day-workouts__card-buttons">
-							<a class="button-text day-workouts__card-button day-workouts__card-button--add" href="c_exercises.php"><p>Добавить</p> <img src="../img/add.svg" alt=""></a>
-							<button class="button-text day-workouts__card-button"><p>Очистить</p> <img src="../img/delete.svg" alt=""></button>
-						</div>
-					</section>
-				</section>
-				<form method="post" class="c-workout__info">
-					<div class="c-workout__info-header">
-						<h1 class="c-workout__info-title">Название:</h1>
-						<input class="c-workout__info-name" type="text" placeholder="Название тренировки" value="" name="name">
-					</div>
-					<section class="c-workout__info-header">
-						<h2 class="c-workout__info-subtitle">Количество кругов</h2>
-						<input class="c-workout__info-circles" type="number" value="1" name="loops">
-					</section>
-					<section class="c-workout__days">
-						<h1 class="c-workout__days-title">ДНИ НЕДЕЛИ</h1>
-						<section class="c-workout__days-content">
-							<div class="c-workout__days-item">
-								<input class="c-workout__days-checkbox" type="checkbox" name="week_days[]" id="week_days1" value="0">
-								<label class="<?php busy_or_free($_SESSION["program"][0]); ?>" for="week_days1">Понедельник</label>
-							</div>
-							<div class="c-workout__days-item">
-								<input class="c-workout__days-checkbox" type="checkbox" name="week_days[]" id="week_days2" value="1">
-								<label class="<?php busy_or_free($_SESSION["program"][1]); ?>" for="week_days2">Вторник</label>
-							</div>
-							<div class="c-workout__days-item">
-								<input class="c-workout__days-checkbox" type="checkbox" name="week_days[]" id="week_days3" value="2">
-								<label class="<?php busy_or_free($_SESSION["program"][2]); ?>" for="week_days3">Среда</label>
-							</div>
-							<div class="c-workout__days-item">
-								<input class="c-workout__days-checkbox" type="checkbox" name="week_days[]" id="week_days4" value="3">
-								<label class="<?php busy_or_free($_SESSION["program"][3]); ?>"  for="week_days4">Четверг</label>
-							</div>
-							<div class="c-workout__days-item">
-								<input class="c-workout__days-checkbox" type="checkbox" name="week_days[]" id="week_days5" value="4">
-								<label class="<?php busy_or_free($_SESSION["program"][4]); ?>" for="week_days5">Пятница</label>
-							</div>
-							<div class="c-workout__days-item">
-								<input class="c-workout__days-checkbox" type="checkbox" name="week_days[]" id="week_days6" value="5">
-								<label class="<?php busy_or_free($_SESSION["program"][5]); ?>" for="week_days6">Суббота</label>
-							</div>
-							<div class="c-workout__days-item">
-								<input class="c-workout__days-checkbox" type="checkbox" name="week_days[]" id="week_days7" value="6">
-								<label class="<?php busy_or_free($_SESSION["program"][6]); ?>"  for="week_days7">Воскресенье</label>
-							</div>
-						</section>
-					</section>
-				</form>
-				<button class="button-text c-workout__days-add" type="submit"><p>Добавить в программу</p> <img src="../img/add.svg" alt=""></button>
-                <a class="button-text c-workout__back-button" href="c_program.php">Назад</a>
-			</section>
-		</section>
-
 		<!-- Popup form for add users (for coach) -->
         <section class="popup-exercise popup-exercise--add-users">
 			<form method="post" class="popup-exercise__content popup-exercise--add-users__form">
@@ -252,6 +213,45 @@ if (isset($_POST["weeks"]) && $_POST["weeks"] > 0){
 
 	<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
 	<script>
+        let programAddButton = document.querySelector('.c-program__duration-button');
+        let dateWokoutInput = document.querySelector('.c-program__duration-date-start');
+
+        document.querySelector('.c-program__duration-weeks').addEventListener('input', function(){
+            if(this.value.length == 0){
+                programAddButton.type = 'button';
+            }
+            else{
+                programAddButton.type = 'submit';
+            }
+
+            if (this.value > 16) {
+                this.value = 16;
+            }
+        });
+
+        programAddButton.addEventListener('click', function(){
+            if (!dateWokoutInput.value) {
+				// set today's date
+				const todayDate = new Date();
+				let year = todayDate.getFullYear();
+				let month = todayDate.getMonth() + 1;
+				let day = todayDate.getDate();
+
+				if (month < 10) {
+					month = `0${month}`;
+				}
+				if (day < 10) {
+					day = `0${day}`;
+				}
+
+				const formattedDate = `${year}-${month}-${day}`;
+
+				// set today's date in input
+				dateWokoutInput.value = formattedDate;
+			}
+        });
+
+
 		// Workout items
         let workoutItemArr = document.querySelectorAll('.day-workouts__card-content');
 
@@ -267,47 +267,41 @@ if (isset($_POST["weeks"]) && $_POST["weeks"] > 0){
             workoutItemArr[i].style.cssText = `height: ${maxWorkoutItemHeight}px;`;
         }
 
+        // Info slide items' spans width
+        let infoItemsSpans = document.querySelectorAll('.workouts-card__item span');
+        let maxSpanWidth = 0;
 
-		// Popup workouts
-		let popupExerciseWindow = document.querySelector('.popup-exercise--c-workouts');
-		let workoutButtonMoreArr = document.querySelectorAll('.c-program__workouts-more');
+        for(let i = 0; i < infoItemsSpans.length; i++){
+            maxSpanWidth = Math.max(maxSpanWidth, infoItemsSpans[i].clientWidth);
+        }
 
-		for(let i = 0; i < workoutButtonMoreArr.length; i++){
-			workoutButtonMoreArr[i].addEventListener('click', function(){
-				let item = workoutButtonMoreArr[i].parentElement.children[0];
-				let WorkoutName = (item.innerHTML).split(' ');
-				WorkoutName[0] = '';
-				WorkoutName = WorkoutName.join(' ');
+        for(let i = 0; i < infoItemsSpans.length; i++){
+            infoItemsSpans[i].style.cssText = `width: ${maxSpanWidth}px;`;
+        }
 
-				let PopupWorkoutName = document.querySelector('.c-workout__info-name');
-				PopupWorkoutName.value = WorkoutName;
-
-				popupExerciseWindow.classList.add("open");
-			});
-		}
 
 
 		// Popup window to add users for coach
 		let StartProgramButton = document.querySelector('.c-program__add-button');
 		let UsersListPopup = document.querySelector('.popup-exercise--add-users');
 
-		StartProgramButton.addEventListener('click', function(){
-			UsersListPopup.classList.add("open");
-		});
+		if(StartProgramButton){
+			StartProgramButton.addEventListener('click', function(){
+				UsersListPopup.classList.add("open");
+			});
+		}
 
 
-
+        // buttons to close popup windows
         const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
 		for(let i = 0; i < closeBtn.length; i++){
 			closeBtn[i].addEventListener('click', function(){
-				popupExerciseWindow.classList.remove("open");
 				UsersListPopup.classList.remove("open");
 			});
 		}
 
 		window.addEventListener('keydown', (e) => {
             if(e.key == "Escape"){
-                popupExerciseWindow.classList.remove("open");
 				UsersListPopup.classList.remove("open");
             }
 		});
@@ -315,7 +309,9 @@ if (isset($_POST["weeks"]) && $_POST["weeks"] > 0){
 		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
 			event.isClickWithInModal = true;
 		});
-
 	</script>
+
+    <!-- Test for clear workout buttons -->
+    <!-- <script src="../tests/test_clear_program_contructor.js"></script> -->
 </body>
 </html>

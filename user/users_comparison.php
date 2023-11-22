@@ -1,30 +1,37 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
-$user1 = NULL;
-$user2 = NULL;
-$sportsmen = $user_data->get_sportsmen();
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
+
+$user1 = NULL; // Initialize user1 as NULL
+$user2 = NULL; // Initialize user2 as NULL
+
+$sportsmen = $user_data->get_sportsmen(); // get a list of sportsmen
+
+// Validate if user1 and user2 parameters are provided in the URL and are valid numeric IDs belonging to sportsmen
 $is_valid1 = isset($_GET["user1"]) && is_numeric($_GET["user1"]) && in_array($_GET["user1"], $sportsmen);
 $is_valid2 = isset($_GET["user2"]) && is_numeric($_GET["user2"]) && in_array($_GET["user2"], $sportsmen);
-if ($is_valid1)
+if ($is_valid1) // If user1 ID is valid, create a User object for user1
     $user1 = new User($conn, $_GET["user1"]);
-
-if ($is_valid2)
+if ($is_valid2) // If user2 ID is valid, create a User object for user2
     $user2 = new User($conn, $_GET["user2"]);
 
-$sportsmen_advanced = $user_data->get_sportsmen_advanced($conn);
+$sportsmen_advanced = $user_data->get_sportsmen_advanced($conn); // get advanced sportsmen data
 $flag_main = false;
+
+// If both user1 and user2 IDs are valid, proceed with comparison
 if ($is_valid1 && $is_valid2){
+    // get control workouts for user1 and user2
     $user1_workouts = $user1->get_control_workouts($conn, NULL, 1);
     $user2_workouts = $user2->get_control_workouts($conn, NULL, 1);
-    if (count($user1_workouts) > 0 && count($user2_workouts) > 0){
+    if (count($user1_workouts) > 0 && count($user2_workouts) > 0){ // If both users have control workouts
+        // get last exercises for user1 and user2
         $last_1 = $user1_workouts[0]->exercises;
         $last_2 = $user2_workouts[0]->exercises;
         $flag_main = true;
-        foreach ($last_1 as $item1){
+        foreach ($last_1 as $item1){ // Compare exercises of user1 and user2
             $flag = false;
             foreach ($last_2 as $item2){
-                if ($item1->get_id() == $item2->get_id()){
+                if ($item1->get_id() == $item2->get_id()){ // if exercises are the same
                     $flag = true;
                     break;
                 }
@@ -47,36 +54,48 @@ if ($is_valid1 && $is_valid2){
 		<div class="container">
 			<section class="comparison-block">
 				<p class="staff-block__title">Первый спортсмен</p>
-                    <?php if ($user1 == NULL){ ?>
+                    <?php if ($user1 == NULL){ // if the user is not selected ?>
                         <section class="staff-block__header">
                             <button class="button-text comparison-block__add-button comparison-block__add-button--first"><p>Добавить спортсмена</p> <img src="../img/add.svg" alt=""></button>
                         </section>
                     <?php } else {
-                        if ($is_valid2)
-                            $reps = get_reps_for_comparison($user1, $conn, 1, $_GET["user2"]);
+                        if ($is_valid2) // If user1 is valid
+                            $reps = get_reps_for_comparison($user1, $conn, 1, $_GET["user2"]); // Get workout data for comparison between user1 and user2 if user2 is valid
                         else
-                            $reps = get_reps_for_comparison($user1, $conn, 1, NULL);
-                        $reps["{{ exercises }}"] = '';
-                        if ($flag_main){
+                            $reps = get_reps_for_comparison($user1, $conn, 1, NULL); // Get workout data for comparison for user1 alone if user2 is not valid
+                        $reps["{{ exercises }}"] = ''; // Initialize exercise data
+                        if ($flag_main){ // If flag_main is true (indicating similarity in last exercises between users)
                             foreach ($last_1 as $item){
+                                if ($item->description == '') // if exercise description is none
+                                    $description = "Нет описания";
+                                else
+                                    $description = $item->description;
+
+                                $muscle_list = "";
+                                foreach ($item->muscles as $muscle){ // Generate muscle list
+                                    $muscle_list .= translate_group($muscle) . " ";
+                                }
+                                $muscle_list = str_replace(' ', '-', trim($muscle_list));
+
+                                 // Replace placeholders with exercise information
                                 $replaces = array(
                                     "{{ image }}" => $item->get_image($conn),
                                     "{{ name }}" => $item->name,
                                     "{{ rating }}" => $item->get_rating(),
                                     "{{ difficulty }}" => $item->difficulty,
-                                    "{{ muscle }}" => '',
-                                    "{{ description }}" => '',
-                                    "{{ input }}" => $item->reps
+                                    "{{ muscle }}" => $muscle_list,
+                                    "{{ description }}" => $description,
+                                    "{{ input }}" => '<div class="exercise-item__repetitions">'. $item->reps . '</div>'
                                 );
-                                $reps["{{ exercises }}"] .= render($replaces, "../templates/control_exercise.html");
+                                $reps["{{ exercises }}"] .= render($replaces, "../templates/control_exercise.html"); // Render exercise details and concatenate to existing exercises data
                             }
                         }
-                        echo render($reps, "../templates/comparison_block.html");
+                        echo render($reps, "../templates/comparison_block.html");  // Render the comparison block with exercise details
                     } ?>
 			</section>
 			<section class="comparison-block">
 				<p class="staff-block__title">Второй спортсмен</p>
-                    <?php if ($user2 == NULL){ ?>
+                    <?php if ($user2 == NULL){ // if the user is not selected ?>
                         <section class="staff-block__header">
                             <button class="button-text comparison-block__add-button comparison-block__add-button--second"><p>Добавить спортсмена</p> <img src="../img/add.svg" alt=""></button>
                         </section>
@@ -88,14 +107,23 @@ if ($is_valid1 && $is_valid2){
                         $reps["{{ exercises }}"] = '';
                         if ($flag_main){
                             foreach ($last_2 as $item){
+                                if ($item->description == '')
+                                    $description = "Нет описания";
+                                else
+                                    $description = $item->description;
+                                $muscle_list = "";
+                                foreach ($item->muscles as $muscle){
+                                    $muscle_list .= translate_group($muscle) . " ";
+                                }
+                                $muscle_list = str_replace(' ', '-', trim($muscle_list));
                                 $replaces = array(
                                     "{{ image }}" => $item->get_image($conn),
                                     "{{ name }}" => $item->name,
                                     "{{ rating }}" => $item->get_rating(),
                                     "{{ difficulty }}" => $item->difficulty,
-                                    "{{ muscle }}" => '',
-                                    "{{ description }}" => '',
-                                    "{{ input }}" => $item->reps
+                                    "{{ muscle }}" => $muscle_list,
+                                    "{{ description }}" => $description,
+                                    "{{ input }}" => '<div class="exercise-item__repetitions">'. $item->reps . '</div>'
                                 );
                                 $reps["{{ exercises }}"] .= render($replaces, "../templates/control_exercise.html");
                             }
@@ -108,13 +136,13 @@ if ($is_valid1 && $is_valid2){
         <section class="popup-exercise popup-exercise--user-first">
 			<form class="popup-exercise__content popup-exercise--add-users__form">
 				<button type="button" type="button" class="popup-exercise__close-button"><img src="../img/close.svg" alt=""></button>
-                    <?php foreach ($sportsmen_advanced as $sportsman){ ?>
+                    <?php foreach ($sportsmen_advanced as $sportsman){ // Iterates through each sportsman in $sportsmen_advanced?>
                     <div class="popup-exercise--add-users__item">
                         <input class="popup-exercise--add-users__input" type="radio" id="users-list1-<?php echo $sportsman->get_id(); ?>" name="user1" value="<?php echo $sportsman->get_id(); ?>"/>
                         <label class="popup-exercise--add-users__label" for="users-list1-<?php echo $sportsman->get_id(); ?>"><?php echo $sportsman->name. " " . $sportsman->surname; ?></label>
                     </div>
                     <?php }
-                    if ($is_valid2){ ?>
+                    if ($is_valid2){ //If $user2 is valid, add a hidden input with user2's ID ?>
                         <input type="hidden" name="user2" value="<?php echo $user2->get_id(); ?>">
                     <?php } ?>
 				<button type="submit" class="button-text popup-exercise--add-users__button-add" type="submit"><p>Добавить</p><img src="../img/add.svg" alt=""></button>
@@ -141,41 +169,40 @@ if ($is_valid1 && $is_valid2){
     <?php include "../templates/footer.html" ?>
 
     <script>
+        // blocks of comarison
         let FirstUserAddPopup = document.querySelector('.popup-exercise--user-first');
         let SecondUserAddPopup = document.querySelector('.popup-exercise--user-second');
 
         let userAddButtonFirst = document.querySelector('.comparison-block__add-button--first');
         let userAddButtonSecond = document.querySelector('.comparison-block__add-button--second');
 
+        // event listeners for add buttons(if click open popup windows)
         if(userAddButtonFirst){
-            userAddButtonFirst.addEventListener('click', function(){
+            userAddButtonFirst.addEventListener('click', function(){ // open first popup window (list of users)
                 FirstUserAddPopup.classList.add("open");
             });
         }
         if(userAddButtonSecond){
-            userAddButtonSecond.addEventListener('click', function(){
+            userAddButtonSecond.addEventListener('click', function(){ // open second popup window (list of users)
                 SecondUserAddPopup.classList.add("open");
             });
         }
         
 
+        // close popup windows
         const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
 		for(let i = 0; i < closeBtn.length; i++){
-			closeBtn[i].addEventListener('click', function(){
+			closeBtn[i].addEventListener('click', function(){ // close popup windows
 				FirstUserAddPopup.classList.remove("open");
                 SecondUserAddPopup.classList.remove("open");
 			});
 		}
 
-		window.addEventListener('keydown', (e) => {
+		window.addEventListener('keydown', (e) => { // close popup windows
             if(e.key == "Escape"){
                 FirstUserAddPopup.classList.remove("open");
                 SecondUserAddPopup.classList.remove("open");
             }
-		});
-
-		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
-			event.isClickWithInModal = true;
 		});
 
 
@@ -185,24 +212,24 @@ if ($is_valid1 && $is_valid2){
         let infoBlock = document.querySelectorAll('.exercise-item__info-content');
 
         for(let i = 0; i < infoExerciseButton.length; i++){
-            infoExerciseButton[i].addEventListener('click', function(){
+            infoExerciseButton[i].addEventListener('click', function(){ // show exercise info
                 infoBlock[i].style.cssText = `top: -1%;`;
             });
         }
         for(let i = 0; i < closeInfoExerciseButton.length; i++){
-            closeInfoExerciseButton[i].addEventListener('click', function(){
+            closeInfoExerciseButton[i].addEventListener('click', function(){ // close exercise info
                 infoBlock[i].style.cssText = `top: -101%;`;
             });
         }
 
 
-		//Difficult
+		//Difficult for exercises
 		let difficultCountArr = document.querySelectorAll('.exercise-item__difficult-number');
 		let difficultBlockArr = document.querySelectorAll('.exercise-item__difficult');
 
 		for(let i = 0; i < difficultCountArr.length; i++){
 			difficultBlockArr[i].innerHTML = '';
-            for(let j = 0; j < 5; j++){
+            for(let j = 0; j < 5; j++){ // creating circles of difficulty for the exercise card
 				let newElem = document.createElement('div');
 				newElem.classList.add('exercise-item__difficult-item');
 				if(j > Number(difficultCountArr[i].innerHTML) - 1){

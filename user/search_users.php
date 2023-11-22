@@ -78,31 +78,31 @@ $user_data->set_subscriptions($conn);
 
     <?php include "../templates/footer.html" ?>
     <script>
-        // Exercise search
+        // Exercises search
 		const search_input = document.querySelector('.users-search-nav__search-input');
 		search_input.addEventListener('input', function(){
 			SearchItems(search_input.value);
 		});
 
-		// ===SEARCH===
+		// names of exercises
 		let ExerciseNames = document.querySelectorAll('.user-card__name');
 
+        // search logic
 		function SearchItems(val){
-			val = val.trim().replaceAll(' ', '').toUpperCase();
-			if(val != ''){
+			val = val.trim().replaceAll(' ', '').toUpperCase(); // get value of search's input
+			if(val != ''){ // if value not none
 				ExerciseNames.forEach(function(elem){
 					if(elem.innerText.trim().replaceAll(' ', '').toUpperCase().search(val) == -1){
 						let cur_exercise = elem.parentNode;
 						cur_exercise.classList.add('hide');
 					}
-					else{
+					else{ // if name matches print block
 						let cur_exercise = elem.parentNode;
 						cur_exercise.classList.remove('hide');
 					}
 				});
 			}
-			//
-			else{
+			else{ // if value none print all cards
 				ExerciseNames.forEach(function(elem){
 					let cur_exercise = elem.parentNode;
 					cur_exercise.classList.remove('hide');

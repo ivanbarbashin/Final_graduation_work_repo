@@ -1,12 +1,12 @@
 <?php
-include "templates/func.php";
-include "templates/settings.php";
-$user_data->redirect_logged();
-$conn->close();
+include "templates/func.php";  // Include functions file
+include "templates/settings.php"; // Include settings file
+$user_data->redirect_logged(); // Redirect the user if already logged in
+$conn->close(); // Closing the database connection
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head("Welcome!", true);  ?>
+<?php inc_head("Welcome!", true); // print head.php ?>
 <body class="welcome-page">
     <!-- Welcome block first -->
     <section class="welcome-block-1">
@@ -57,6 +57,7 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Setting the value for the registration page
         localStorage.setItem('SwitchRegLogButton', 'log');
     </script>
 </body>

@@ -1,8 +1,10 @@
 <?php
 include "../templates/func.php";
 include "../templates/settings.php";
+if (isset($_POST['featured']))
+    $user_data->change_featured($conn, $_POST['featured']);
 
-if (empty($_GET["id"]) || !is_numeric($_GET["id"]))
+if ((empty($_GET["id"]) || !is_numeric($_GET["id"])) && empty($_POST['featured']))
     header("Location: ../index.php");
 
 $workout = new Control_Workout($conn, $_GET["id"]);
@@ -16,9 +18,9 @@ $workout = new Control_Workout($conn, $_GET["id"]);
 		<div class="container">
 			<section class="last-control-cover">
 				<p class="last-control__title">Контрольная тренировка <?php echo date("d.m.Y", $workout->date); ?></p>
-                <section class="staff-block__header">
-                    <?php $workout->print_control_exercises($conn); ?>
-                </section>
+                <form method="post" class="staff-block__header">
+                    <?php $workout->print_control_exercises($conn, $user_data); ?>
+                </form>
 			</section>
 		</div>
 	</main>
@@ -43,7 +45,7 @@ $workout = new Control_Workout($conn, $_GET["id"]);
         }
 
 
-		//Difficult
+		//Difficult of exercises
 		let difficultCountArr = document.querySelectorAll('.exercise-item__difficult-number');
 		let difficultBlockArr = document.querySelectorAll('.exercise-item__difficult');
 
