@@ -177,7 +177,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                             <?php if ($user->get_auth()){ // if user is authenticated ?>
                                 <a href="delete_coach.php" class="user-block__staff-button"><img src="../img/delete_black.svg" alt=""></a>
                             <?php } ?>
-                        <?php }else{ // else print button to search users ?>
+                        <?php }else if($user->get_auth()){ // else print button to search users ?>
                             <a href="search_users.php" class="user-block__staff-button user-block__staff-button--add"><img src="../img/add_black.svg" alt=""></a>
                         <?php } ?>
 					</div>
@@ -191,8 +191,8 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                             <?php if ($user->get_auth()){ // if user is authenticated ?>
                                 <a href="delete_doctor.php" class="user-block__staff-button"><img src="../img/delete_black.svg" alt=""></a>
                             <?php } ?>
-                        <?php }else{ // else print button to search users ?>
-                            <a href="search_users.php" class="user-block__staff-button"><img src="../img/add_black.svg" alt=""></a>
+                        <?php }else if($user->get_auth()){ // else print button to search users ?>
+                            <a href="search_users.php" class="user-block__staff-button user-block__staff-button--add"><img src="../img/add_black.svg" alt=""></a>
                         <?php } ?>
 					</div>
                     <!-- Count of subscribers and subscriptions -->

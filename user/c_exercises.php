@@ -1,6 +1,11 @@
 <?php
 include "../templates/func.php"; // Include functions file
 include "../templates/settings.php"; // Include settings file
+
+if (empty($_SESSION["c_workout"])){
+	$_SESSION["c_workout"] = array();
+}
+
 $user_data->check_the_login(); // Check user login status
 
 if (empty($_SESSION['workout'])){ // Initialize $_SESSION['workout'] array

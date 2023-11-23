@@ -191,12 +191,12 @@
 		height: 18px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 22px;
 		padding: 5px 10px 7px 15px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 18px;
 		margin-left: 5px;
 	}
@@ -469,7 +469,7 @@
 
 	.coach-page .staff-block__goal-text{
 		font-size: 19px;
-		margin-right: 1px;
+		margin-right: 3px;
 	}
 
 	.coach-page .staff-block__item-cover img{
@@ -804,12 +804,12 @@
 		height: 17px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 21px;
 		padding: 5px 10px 7px 15px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 17px;
 		margin-left: 5px;
 	}
@@ -1627,7 +1627,7 @@
 	/* =======WORKOUT SESSION PAGE====== */
 
 	.session-exercises__swiper{
-		width: 45%;
+		width: 60%;
 	}
 
 	/* ==================================== */
@@ -1738,6 +1738,8 @@
 
 
 @media (max-width: 1500px){
+
+
 	/* =====REGISTRATION PAGE===== */
 
 	.log-reg__content{
@@ -2350,12 +2352,12 @@
 		height: 16px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 19px;
 		padding: 3px 8px 5px 12px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 15px;
 		margin-left: 3px;
 	}
@@ -2465,7 +2467,7 @@
 	/* =======WORKOUT SESSION PAGE====== */
 
 	.session-exercises__swiper{
-		width: 50%;
+		width: 55%;
 	}
 
 	/* ==================================== */
@@ -3202,12 +3204,12 @@
 		height: 18px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 21px;
 		padding: 3px 10px 5px 15px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 18px;
 		margin-left: 5px;
 	}
@@ -3300,12 +3302,17 @@
 	 }
 
 	 .user-block__sub-button{
-		font-size: 23px;
+		font-size: 19px;
+		padding: 5px 10px 5px 15px;
+	 }
+
+	 .user-block__sub-button p{
+		margin-right: 10px;
 	 }
 
 	 .user-block__sub-button img{
-		width: 18px;
-		height: 18px;
+		width: 15px;
+		height: 15px;
 	 }
 
 	/* ============================================= */
@@ -4181,12 +4188,12 @@
 		height: 17px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 19px;
 		padding: 3px 10px 5px 15px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 17px;
 		margin-left: 5px;
 	}
@@ -4294,7 +4301,7 @@
 	 }
 
 	 .user-block__sub-button{
-		font-size: 21px;
+		font-size: 19px;
 		padding: 5px 10px 5px 15px;
 	 }
 
@@ -4303,8 +4310,8 @@
 	 }
 
 	 .user-block__sub-button img{
-		width: 17px;
-		height: 17px;
+		width: 15px;
+		height: 15px;
 	 }
 
 	/* ============================================= */
@@ -5515,12 +5522,12 @@
 		height: 16px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 17px;
 		padding: 3px 8px 5px 12px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 16px;
 		margin-left: 3px;
 	}
@@ -8010,12 +8017,12 @@
 		height: 18px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 19px;
 		padding: 3px 10px 5px 15px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 18px;
 		margin-left: 3px;
 	}
@@ -9385,12 +9392,12 @@
 		height: 16px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 17px;
 		padding: 3px 10px 5px 15px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 16px;
 		margin-left: 3px;
 	}
@@ -10649,12 +10656,12 @@
 		height: 15px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 15px;
 		padding: 3px 8px 5px 12px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 14px;
 		margin-left: 3px;
 	}
@@ -15619,12 +15626,12 @@
 		height: 14px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 14px;
 		padding: 3px 8px 5px 12px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 13px;
 		margin-left: 2px;
 	}
@@ -17628,12 +17635,12 @@
 		height: 13px;
 	}
 
-	.exercise-block .exercise-item__add{
+	.exercise-block .exercise-item__add, .exercise-block .exercise-item__delite{
 		font-size: 12px;
 		padding: 3px 6px 5px 10px;
 	}
 
-	.exercise-block .exercise-item__add img{
+	.exercise-block .exercise-item__add img, .exercise-block .exercise-item__delite img{
 		width: 11px;
 		margin-left: 2px;
 	}

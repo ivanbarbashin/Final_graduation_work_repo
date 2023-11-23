@@ -1287,7 +1287,7 @@
 }
 
 .user-block__sub-button{
-    font-size: 25px;
+    font-size: 23px;
     padding: 5px 15px 5px 20px;
     margin-top: 10px;
 }
@@ -2550,7 +2550,8 @@
 
 
 .staff-block__name-text{
-    font-size: 27px;
+    text-align: center;
+    font-size: 25px;
     font-family: 'Ubuntu', sans-serif;
     margin-right: 10px;
 }
@@ -3153,7 +3154,7 @@
 }
 
 .comparison-block__physics .exercise-item{
-    width: 70%;
+    width: 100%;
     margin:  20px auto;
 }
 

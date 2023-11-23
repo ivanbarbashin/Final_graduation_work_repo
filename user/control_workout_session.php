@@ -47,7 +47,7 @@ $cnt_apps = 0; // Initializing a variable for counting approaches
 <footer class="workout-session-footer workout-session-footer--с">
     <div class="workout-session-footer-cover">
         <h1 class="workout-session-footer__title">Осталось:</h1>
-        <h2 class="workout-session-footer__item"><span><?php echo count($workout->exercises); // exercises number left ?></span> упражнений(я)</h2>
+        <h2 class="workout-session-footer__item"><span><?php echo count($workout->exercises); // exercises number left ?></span> упражнений(я / е)</h2>
     </div>
     <input type="hidden" name="id" value="<?php echo $_GET["id"];?>">
     <button type="submit" class="button-text workout-session-footer__button">Завершить</button>

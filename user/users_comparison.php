@@ -66,11 +66,15 @@ if ($is_valid1 && $is_valid2){
                         $reps["{{ exercises }}"] = ''; // Initialize exercise data
                         if ($flag_main){ // If flag_main is true (indicating similarity in last exercises between users)
                             foreach ($last_1 as $item){
+                                $count_exercise_reps = 0;
                                 if ($item->description == '') // if exercise description is none
                                     $description = "Нет описания";
                                 else
                                     $description = $item->description;
-
+                                if ($item->reps == '')
+                                    $count_exercise_reps  = "Нет данных";
+                                else
+                                    $count_exercise_reps = $item->reps;
                                 $muscle_list = "";
                                 foreach ($item->muscles as $muscle){ // Generate muscle list
                                     $muscle_list .= translate_group($muscle) . " ";
@@ -85,7 +89,8 @@ if ($is_valid1 && $is_valid2){
                                     "{{ difficulty }}" => $item->difficulty,
                                     "{{ muscle }}" => $muscle_list,
                                     "{{ description }}" => $description,
-                                    "{{ input }}" => '<div class="exercise-item__repetitions">'. $item->reps . '</div>'
+                                    "{{ button_featured }}" => '',
+                                    "{{ input }}" => '<div class="exercise-item__repetitions">'. $count_exercise_reps . '</div>'
                                 );
                                 $reps["{{ exercises }}"] .= render($replaces, "../templates/control_exercise.html"); // Render exercise details and concatenate to existing exercises data
                             }
@@ -107,10 +112,15 @@ if ($is_valid1 && $is_valid2){
                         $reps["{{ exercises }}"] = '';
                         if ($flag_main){
                             foreach ($last_2 as $item){
+                                $count_exercise_reps = 0;
                                 if ($item->description == '')
                                     $description = "Нет описания";
                                 else
                                     $description = $item->description;
+                                if ($item->reps == '')
+                                    $count_exercise_reps  = "Нет данных";
+                                else
+                                    $count_exercise_reps = $item->reps;
                                 $muscle_list = "";
                                 foreach ($item->muscles as $muscle){
                                     $muscle_list .= translate_group($muscle) . " ";
@@ -123,7 +133,8 @@ if ($is_valid1 && $is_valid2){
                                     "{{ difficulty }}" => $item->difficulty,
                                     "{{ muscle }}" => $muscle_list,
                                     "{{ description }}" => $description,
-                                    "{{ input }}" => '<div class="exercise-item__repetitions">'. $item->reps . '</div>'
+                                    "{{ button_featured }}" => '',
+                                    "{{ input }}" => '<div class="exercise-item__repetitions">'. $count_exercise_reps . '</div>'
                                 );
                                 $reps["{{ exercises }}"] .= render($replaces, "../templates/control_exercise.html");
                             }
