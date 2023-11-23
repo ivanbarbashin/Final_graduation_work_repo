@@ -229,27 +229,29 @@ if (isset($_POST["weeks"]) && $_POST["weeks"] > 0){ // Check if form data is sub
             }
         });
 
-        programAddButton.addEventListener('click', function(){ // if date is not selected, set today's date
-            if (!dateWokoutInput.value) {
-				// set today's date
-				const todayDate = new Date();
-				let year = todayDate.getFullYear();
-				let month = todayDate.getMonth() + 1;
-				let day = todayDate.getDate();
+        if(programAddButton){
+            programAddButton.addEventListener('click', function(){ // if date is not selected, set today's date
+                if (!dateWokoutInput.value) {
+                    // set today's date
+                    const todayDate = new Date();
+                    let year = todayDate.getFullYear();
+                    let month = todayDate.getMonth() + 1;
+                    let day = todayDate.getDate();
 
-				if (month < 10) {
-					month = `0${month}`;
-				}
-				if (day < 10) {
-					day = `0${day}`;
-				}
+                    if (month < 10) {
+                        month = `0${month}`;
+                    }
+                    if (day < 10) {
+                        day = `0${day}`;
+                    }
 
-				const formattedDate = `${year}-${month}-${day}`;
+                    const formattedDate = `${year}-${month}-${day}`;
 
-				// set today's date in input
-				dateWokoutInput.value = formattedDate;
-			}
-        });
+                    // set today's date in input
+                    dateWokoutInput.value = formattedDate;
+                }
+            });
+        }
 
 
 		// Workout items
