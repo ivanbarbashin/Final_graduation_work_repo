@@ -1,35 +1,37 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 
-$user_data->check_the_login();
+$user_data->check_the_login(); // Check user login status
 $flag = isset($_SESSION["workout"]);
 
-if (empty($_SESSION['workout']))
+if (empty($_SESSION['workout'])) // Check if $_SESSION['workout'] is set; if not, initialize it as an empty array
     $_SESSION['workout'] = array();
 
 
-if (isset($_POST["week_days"])){
+if (isset($_POST["week_days"])){ // Check if form data is submitted
+	// get form data
     $name = $_POST["name"];
     $loops = $_POST["loops"];
+	// Initialize arrays to store exercise-related information
     $exercises = [];
     $reps = [];
     $approaches = [];
-    foreach ($_SESSION["workout"] as $exercise){
+    foreach ($_SESSION["workout"] as $exercise){ // Extract exercise details from $_SESSION["workout"]
         array_push($exercises, $exercise->get_id());
         array_push($reps, $exercise->reps);
         array_push($approaches, $exercise->approaches);
     }
-    $user_id = $user_data->get_id();
-    $sql = "INSERT INTO workouts (creator, name, exercises, reps, approaches, loops) VALUES ($user_id, '$name', '".json_encode($exercises)."', '".json_encode($reps)."', '".json_encode($approaches)."', $loops)";
+    $user_id = $user_data->get_id(); // Get user ID
+    $sql = "INSERT INTO workouts (creator, name, exercises, reps, approaches, loops) VALUES ($user_id, '$name', '".json_encode($exercises)."', '".json_encode($reps)."', '".json_encode($approaches)."', $loops)"; // Create SQL query to insert workout details into the database
     if ($conn->query($sql)){
-        $lid = mysqli_insert_id($conn);
+        $lid = mysqli_insert_id($conn); // Get the last inserted ID
 
-        foreach ($_POST["week_days"] as $week_day) {
+        foreach ($_POST["week_days"] as $week_day) { // Update $_SESSION["program"] with workout IDs for selected week days
             $_SESSION["program"][(int)$week_day] = $lid;
         }
-        $_SESSION["workout"] = array();
-        header("Location: c_program.php");
+        $_SESSION["workout"] = array(); // Clear $_SESSION["workout"] after processing
+        header("Location: c_program.php"); // Redirect to the c_program.php page
 
     }else{
         echo $conn->error;
@@ -38,9 +40,9 @@ if (isset($_POST["week_days"])){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-    <?php include "../templates/header.php" ?>
+    <?php include "../templates/header.php"; // print header template ?>
 
 	<main class="c-workout">
 		<div class="container">
@@ -51,7 +53,7 @@ if (isset($_POST["week_days"])){
 					<!-- Exercise items -->
                     <?php
                     if ($flag) {
-                        foreach ($_SESSION["workout"] as $exercise){
+                        foreach ($_SESSION["workout"] as $exercise){ // print exercises list
                             $exercise->print_it($conn);
                         }
                     }
@@ -60,7 +62,7 @@ if (isset($_POST["week_days"])){
 				<!-- Info about day workout -->
 				<section class="workouts-card__info">
 					<!-- Muscle groups -->
-                    <?php print_workout_info_function($_SESSION["workout"]); ?>
+                    <?php print_workout_info_function($_SESSION["workout"]); // print workout info ?>
 					<!-- Decorative line -->
 					<div class="workouts-card__info-line"></div>
 					<!-- Exercise info -->
@@ -169,6 +171,7 @@ if (isset($_POST["week_days"])){
     <?php include "../templates/footer.html" ?>
 
 	<script>
+		// c_workout variables
 		let exerciseCardsArray = document.querySelectorAll('.exercise-item--workout');
 		let addWorkoutButton = document.querySelector('.c-workout__days-add');
 
@@ -233,7 +236,7 @@ if (isset($_POST["week_days"])){
 		});
 
 
-		workoutNameInput.addEventListener('input', function() {
+		workoutNameInput.addEventListener('input', function() { // check name if workout
 			if (this.value.length > 16) {
 				this.value = this.value.slice(0, 16);
 			}

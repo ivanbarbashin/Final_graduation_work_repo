@@ -1,33 +1,34 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 
-if ($user_data->get_status() == "doctor" || empty($_GET["user"]) || !is_numeric($_GET["user"]))
-    header("Location: coach.php");
+if ($user_data->get_status() == "doctor" || empty($_GET["user"]) || !is_numeric($_GET["user"])) // Check if the user is a doctor or if the user ID is missing or invalid
+    header("Location: coach.php"); // Redirect
 
-if (isset($_POST['featured']))
+if (isset($_POST['featured'])) // Handle a POST request to change the 'featured' status
     $user_data->change_featured($conn, $_POST['featured']);
 
-$user = new User($conn, $_GET["user"]);
+$user = new User($conn, $_GET["user"]); // Create a new User object based on the provided user ID from the GET parameter
 
+// get not-done and done workouts for the user
 $not_done_workouts = $user->get_control_workouts($conn, NULL, 0);
 $done_workouts = $user->get_control_workouts($conn, NULL, 1);
 
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body class="control-workouts-page"> 
-    <?php include "../templates/header.php" ?>
+    <?php include "../templates/header.php"; // print header template ?>
 
 	<main class="workouts-block">
         <div class="container">
                 <?php
-                if (count($not_done_workouts) > 0){
-                    $workout = $not_done_workouts[0];
-                    if ($workout->holiday){
-                        include "../templates/holiday.html";
-                    }else{ $workout->set_muscles(); ?>
+                if (count($not_done_workouts) > 0){ // Check if there are pending workouts
+                    $workout = $not_done_workouts[0]; // Retrieve the first pending workout
+                    if ($workout->holiday){ // Check if it's a holiday
+                        include "../templates/holiday.html"; // Include holiday template
+                    }else{ $workout->set_muscles(); // Set muscles for the workout ?>
                     <!-- Day's workout swiper -->
                     <section class="workouts-swiper">
                         <!-- Slide -->
@@ -35,7 +36,7 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
                         <section class="workouts-card">
                             <!-- Title and button to add to favorite collection -->
                             <div class="workouts-card__header">
-                                <h2 class="workouts-card__date"><?php echo date("d.m.Y", $workout->date); ?></h2>
+                                <h2 class="workouts-card__date"><?php echo date("d.m.Y", $workout->date); // print date of workout ?></h2>
                                 <!-- <button class="workouts-card__favorite-btn"><img src="../img/favorite.svg" alt=""></button> -->
                             </div>
                             <!-- Content of workout -->
@@ -43,10 +44,10 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
                                 <!-- Exercises array -->
                                 <form method="post" class="workouts-card__exercises-cover">
                                     <!-- Exercise items -->
-                                    <?php $workout->print_control_exercises($conn, $user_data); ?>
+                                    <?php $workout->print_control_exercises($conn, $user_data); // print exercises of workout ?>
                                 </form>
                                 <!-- Info about day workout -->
-                                <?php $workout->print_control_workout_info($conn); ?>
+                                <?php $workout->print_control_workout_info($conn); // print workout info ?>
                             </section>
                         </section>
                     </section>
@@ -63,8 +64,8 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
 					<h1 class="last-trainings__title">Последние тренировки</h1>
 					<div class="last-trainings__content">
                         <?php if (count($done_workouts) != 0){
-                            $reversedDoneWorkouts = array_reverse($done_workouts);
-                            foreach ($reversedDoneWorkouts as $done_workout) { $done_workout->set_muscles(); ?>
+                            $reversedDoneWorkouts = array_reverse($done_workouts); // reverse array of done workouts
+                            foreach ($reversedDoneWorkouts as $done_workout) { $done_workout->set_muscles(); // print last trainings list ?>
 						    <!-- Item -->
                             <section class="last-trainings__card">
                                 <!-- Left part of last exercise item -->
@@ -72,12 +73,12 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
                                     <!-- Time of training -->
                                     <div class="last-trainings__item">
                                         <img class="last-trainings__item-img" src="../img/time.svg" alt="">
-                                        <p class="last-trainings__item-text"><span><?php echo date("d.m.Y", $done_workout->date); ?></span></p>
+                                        <p class="last-trainings__item-text"><span><?php echo date("d.m.Y", $done_workout->date); // print date ?></span></p>
                                     </div>
                                     <!-- Exercise count of training -->
                                     <div class="last-trainings__item">
                                         <img class="last-trainings__item-img" src="../img/cards.svg" alt="">
-                                        <p class="last-trainings__item-text"><span><?php echo count($done_workout->exercises) ?></span> упражнений</p>
+                                        <p class="last-trainings__item-text"><span><?php echo count($done_workout->exercises) // print number of exercises ?></span> упражнений</p>
                                     </div>
                                 </div>
                                 <!-- Right part of last exercise item -->
@@ -85,11 +86,11 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
                                     <!-- Muscle groups count of training -->
                                     <div class="last-trainings__item">
                                     <img class="last-trainings__item-img" src="../img/cards.svg" alt="">
-                                    <p class="last-trainings__item-text"><span><?php echo $done_workout->get_groups_amount() - 1; ?></span> группы мышц</p>
+                                    <p class="last-trainings__item-text"><span><?php echo $done_workout->get_groups_amount() - 1; // print number of muscle groups ?></span> группы мышц</p>
                                     </div>
                                     <!-- Button 'Подробнее' for more info about exercise -->
                                     <div class="last-trainings__item">
-                                    <a class="button-text last-trainings__item-button" href="last_control_workout.php?id=<?php echo $done_workout->id; ?>">Подробнее <img src="../img/other.svg" alt=""></a>
+                                    <a class="button-text last-trainings__item-button" href="last_control_workout.php?id=<?php echo $done_workout->id; // more info link ?>">Подробнее <img src="../img/other.svg" alt=""></a>
                                     </div>
                                 </div>
                             </section>
@@ -101,7 +102,7 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
 				</section>
                 <!-- Buttons favorite workouts and my program -->
                 <section class="workout-other__buttons">
-                    <?php if ($user_data->get_status() == "coach"){ ?>
+                    <?php if ($user_data->get_status() == "coach"){ // if status == coach, print new workout button ?>
                         <a class="button-text workout-other__button" href="c_control_workout.php?for=<?php echo $user->get_id(); ?>"><p>Новая</p> <img src="../img/my_programm.svg" alt=""></a>
                     <?php } ?>
                     </section>
@@ -109,7 +110,7 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
         </div>
     </main>
 	
-    <?php include "../templates/footer.html" ?>
+    <?php include "../templates/footer.html"; // print footer template ?>
 
 	<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
     <script>
@@ -124,12 +125,12 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
         let infoBlock = document.querySelectorAll('.exercise-item__info-content');
 
         for(let i = 0; i < infoExerciseButton.length; i++){
-            infoExerciseButton[i].addEventListener('click', function(){
+            infoExerciseButton[i].addEventListener('click', function(){ // open exercise's info
                 infoBlock[i].style.cssText = `top: -1%;`;
             });
         }
         for(let i = 0; i < closeInfoExerciseButton.length; i++){
-            closeInfoExerciseButton[i].addEventListener('click', function(){
+            closeInfoExerciseButton[i].addEventListener('click', function(){// close exercise's info
                 infoBlock[i].style.cssText = `top: -101%;`;
             });
         }
@@ -140,11 +141,11 @@ $done_workouts = $user->get_control_workouts($conn, NULL, 1);
         let maxSpanWidth = 0;
 
         for(let i = 0; i < infoItemsSpans.length; i++){
-            maxSpanWidth = Math.max(maxSpanWidth, infoItemsSpans[i].clientWidth);
+            maxSpanWidth = Math.max(maxSpanWidth, infoItemsSpans[i].clientWidth); // find maximun span height
         }
 
         for(let i = 0; i < infoItemsSpans.length; i++){
-            infoItemsSpans[i].style.cssText = `width: ${maxSpanWidth}px;`;
+            infoItemsSpans[i].style.cssText = `width: ${maxSpanWidth}px;`; // set maximun span height
         }
     </script>
 </body>

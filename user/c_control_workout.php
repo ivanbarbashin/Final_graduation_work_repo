@@ -1,30 +1,31 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 
-if (empty($_SESSION['c_workout']))
+if (empty($_SESSION['c_workout'])) // Initialize  $_SESSION['c_workout'] array
     $_SESSION['c_workout'] = array();
 
 
-if ($user_data->get_status() != "coach" || empty($_GET["for"]) || !is_numeric($_GET["for"]))
+if ($user_data->get_status() != "coach" || empty($_GET["for"]) || !is_numeric($_GET["for"])) // Check user status and GET parameters; redirect if conditions aren't met
     header("Location: coach.php");
 
-$user_id = $_GET["for"];
+$user_id = $_GET["for"]; // Extract user ID from GET parameter
 
 $flag = isset($_SESSION["c_workout"]);
 
-if (isset($_POST['featured']))
+if (isset($_POST['featured'])) // Check if 'featured' value is set in POST data, then update user's featured status
     $user_data->change_featured($conn, $_POST['featured']);
 
-if (isset($_POST["name"]) && isset($_POST["date"])){
+if (isset($_POST["name"]) && isset($_POST["date"])){ // If 'name' and 'date' values are set in POST data, prepare and execute an SQL query to insert control workout data
     $name = $_POST["name"];
     $loops = $_POST["loops"];
     $exercises = [];
     $date = strtotime($_POST["date"]);
-    foreach ($_SESSION["c_workout"] as $exercise){
+    foreach ($_SESSION["c_workout"] as $exercise){// Collect exercises from $_SESSION["c_workout"]
         array_push($exercises, $exercise->get_id());
     }
 
+	// Prepare and execute SQL query to insert control workout data
     $sql = "INSERT INTO control_workouts (creator, user, name, exercises, date) VALUES (".$user_data->get_id().", $user_id, '$name', '".json_encode($exercises)."', $date)";
     echo $sql;
     if ($conn->query($sql)){
@@ -37,9 +38,9 @@ if (isset($_POST["name"]) && isset($_POST["date"])){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-    <?php include "../templates/header.php" ?>
+    <?php include "../templates/header.php"; // print header template ?>
 
 	<main class="c-workout">
 		<div class="container">
@@ -49,8 +50,8 @@ if (isset($_POST["name"]) && isset($_POST["date"])){
 				<form method="post" class="workouts-card__exercises-cover">
 					<!-- Exercise items -->
                     <?php
-                    if ($flag) {
-                        foreach ($_SESSION["c_workout"] as $exercise){
+                    if ($flag) { // Checks if $flag is set; iterates through the exercises in $_SESSION["c_workout"]
+                        foreach ($_SESSION["c_workout"] as $exercise){ // For each exercise print control details
                             $is_featured = $exercise->is_featured($user_data);
                             $exercise->print_control_exercise($conn, $is_featured, false);
                         }
@@ -60,7 +61,7 @@ if (isset($_POST["name"]) && isset($_POST["date"])){
 				<!-- Info about day workout -->
 				<section class="workouts-card__info">
 					<!-- Muscle groups -->
-                    <?php print_workout_info_function($_SESSION["c_workout"]); ?>
+                    <?php print_workout_info_function($_SESSION["c_workout"]); // print info of workout ?>
 					<!-- Decorative line -->
 					<div class="workouts-card__info-line"></div>
 					<!-- Exercise info -->

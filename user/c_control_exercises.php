@@ -1,35 +1,35 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 
-if ($user_data->get_status() != "coach" || empty($_GET["for"]) || !is_numeric($_GET["for"]))
-    header("Location: coach.php");
+if ($user_data->get_status() != "coach" || empty($_GET["for"]) || !is_numeric($_GET["for"])) // Check user status and URL parameters for access control
+    header("Location: coach.php"); // Redirect if conditions are not met
 
-$user_id = $_GET["for"];
+$user_id = $_GET["for"]; // Get 'for' parameter value from URL
 
-if (empty($_SESSION['c_workout'])){
+if (empty($_SESSION['c_workout'])){ // Initialize $_SESSION['c_workout'] if not already set
     $_SESSION['c_workout'] = array();
 }
 
 if (isset($_POST['featured']))
-    $user_data->change_featured($conn, $_POST['featured']);
+    $user_data->change_featured($conn, $_POST['featured']); // Change 'featured' attribute
 
 else if (isset($_POST['exercise'])){
-    $user_exercise = new User_Exercise($conn, $_POST["exercise"]);
+    $user_exercise = new User_Exercise($conn, $_POST["exercise"]); // Add exercise to $_SESSION['c_workout']
     array_push($_SESSION['c_workout'], $user_exercise);
 }
 
 if (isset($_GET['my']) && is_numeric($_GET['my'])){
-    $my = $_GET['my'];
+    $my = $_GET['my']; // Set $my to 'my' parameter value if numeric
 }else{
     $my = 1;
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-<?php include "../templates/header.php" ?>
+<?php include "../templates/header.php" // print header template ?>
 
 <!-- Exercise navigation -->
 <nav class="exercises-nav">
@@ -155,11 +155,11 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
         </section>
         <!-- Exercises array -->
         <?php
-        if ($my){
-            if (count($user_data->my_exercises) > 0){
+        if ($my){ // Checking the value of $my
+            if (count($user_data->my_exercises) > 0){  // Displaying user's exercises in a form
                 echo "<section class='exercise-block'>";
                 foreach ($user_data->my_exercises as $exercise_id){
-                    if (!in_workout($_SESSION["c_workout"], $exercise_id)) {
+                    if (!in_workout($_SESSION["c_workout"], $exercise_id)) {  // getting and printing user's exercise details
                         echo "<form method='post' class='exercise-form'>";
                         $exercise = new User_Exercise($conn, $exercise_id);
                         $is_featured = $exercise->is_featured($user_data);
@@ -168,10 +168,10 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                     }
                 }
                 echo "</section>";
-            }else{
+            }else{  // If the user has no personal exercises, prompt them to add exercises from the common list
                 echo "<h1 class='exercises__none'>У Вас нет своих упражнений. Вы можете добавить их на вкладке 'Упражнения'.</h1>";
             }
-        }else{
+        }else{ // print all list of exercises
             $select_sql = "SELECT id FROM exercises";
             if ($select_result = $conn->query($select_sql)){
                 echo "<section class='exercise-block'>";
@@ -186,14 +186,14 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                 }
                 echo "</section>";
             }else{
-                echo $conn->error;
+                echo $conn->error; // Displaying an error if the query fails
             }
         }
         ?>
     </div>
 </main>
 
-<?php include "../templates/footer.html" ?>
+<?php include "../templates/footer.html"; // footer template ?>
 
 <script>
     // Button to see exercise info
@@ -385,7 +385,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
     });
 
 
-    searchButton.addEventListener('click', function(){
+    searchButton.addEventListener('click', function(){ // search button of side panel logic
         MainFilter.value = 'default';
 
         if(exerciseBlock){
@@ -486,6 +486,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
     });
 
 
+    // get data from localstorage
     if(localStorage.getItem('c_allFilterInputsChecked')){
         allFilterInputsChecked = localStorage.getItem('c_allFilterInputsChecked').split(',');
         for(let i = 0; i < allFilterInputsChecked.length; i++){
@@ -529,8 +530,8 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
     let ExerciseNames = document.querySelectorAll('.exercise-item__title');
 
     function SearchItems(val){
-        val = val.trim().replaceAll(' ', '').toUpperCase();
-        if(val != ''){
+        val = val.trim().replaceAll(' ', '').toUpperCase(); // get value of search's input
+        if(val != ''){ // if value not none
             ExerciseNames.forEach(function(elem){
                 if(elem.innerText.trim().replaceAll(' ', '').toUpperCase().search(val) == -1){
                     let cur_exercise = elem.parentNode;
@@ -538,7 +539,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                         cur_exercise.classList.add('hide');
                     }
                 }
-                else{
+                else{ // if name matches print block
                     let cur_exercise = elem.parentNode;
                     if(cur_exercise){
                         cur_exercise.classList.remove('hide');
@@ -546,8 +547,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                 }
             });
         }
-        //
-        else{
+        else{ // if value none print all cards
             ExerciseNames.forEach(function(elem){
                 let cur_exercise = elem.parentNode;
                 if(cur_exercise){

@@ -1,51 +1,58 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
-$user_data->check_the_login();
-if (isset($_GET["user"]) && is_numeric($_GET["user"]))
-    if ($_GET["user"] == $user_data->get_id())
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
+$user_data->check_the_login(); // Check user login status
+if (isset($_GET["user"]) && is_numeric($_GET["user"])) // Determine the user based on GET parameters or current session
+    if ($_GET["user"] == $user_data->get_id()) // If the GET parameter matches the current user's ID, set $user to current session user
         $user = $user_data;
-    else
+    else // If a different user ID is provided, set $user to that user's data
         $user = new User($conn, $_GET["user"]);
- else
+ else // If no specific user is requested, default to current session user
      $user = $user_data;
 
-if (!$user->set_program($conn))
+if (!$user->set_program($conn)) // Redirect if the user does not have a set program
     header("Location: c_program_info.php");
 
-if (isset($_POST['end']) && $user->get_auth()){
+if (isset($_POST['end']) && $user->get_auth()){ // get the 'end program' action for authenticated users
+    // Update the program start date to 0 to signify program completion
     $sql = "UPDATE program_to_user SET date_start=0 WHERE user=".$user->get_id()."  AND date_start + weeks * 604800 >= ".time()." LIMIT 1";
     if ($conn->query($sql)){
-        header("Refresh: 0");
+        header("Refresh: 0"); // Refresh the page after the program end
     }else{
-        echo $conn->error;
+        echo $conn->error; // Display an error if encountered
     }
 }
 
+// get starting a program for another user (non-authenticated)
 if (isset($_POST["weeks"]) && $_POST["weeks"] > 0 && !$user->get_auth()){
+    // Determine the program start date based on user input or current date
     if (empty($_POST["date_start"]))
         $date_start = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
     else
         $date_start = strtotime($_POST["date_start"]);
 
+    // Insert program information into the database for the authenticated user
     $program_id = $user->program->get_id();
 
     $sql2 = "INSERT INTO program_to_user (user, program, date_start, weeks) VALUES (".$user_data->get_id().", $program_id, $date_start, ".$_POST['weeks'].")";
     $sql3 = "INSERT INTO news (message, user, date, personal) VALUES ('Пользователь начал программу друга.', ".$user_data->get_id().", ".time().", 0)";
 
-    if ($conn->query($sql2) && $conn->query($sql3)){
-        header("Location: my_program.php");
+    if ($conn->query($sql2) && $conn->query($sql3)){ // Execute SQL queries to start the program and create a news entry
+        header("Location: my_program.php"); // Redirect to the user's program page after successful initiation
     }else{
-        echo $conn->error;
+        echo $conn->error; // Display an error if encountered
     }
 }
 
+// Fetch user's program workouts and additional data
 $user->program->set_workouts($conn);
 $user->program->set_additional_data($conn, $user->get_id());
+// Initialize variables for workout statistics
 $cnt_workouts_done = 0;
 $cnt_workouts_all = 0;
 $weekday_start = date("N", $user->program->date_start) - 1;
 
+// Initialize an array to count muscles trained during the program
 $muscles = array(
     "arms" => 0,
     "legs" => 0,
@@ -56,7 +63,7 @@ $muscles = array(
     "cnt" => 0
 );
 
-#counting muscles
+//Counting muscles trained in the program's workouts
 foreach ($user->program->workouts as $workout){
     foreach ($workout->set_muscles() as $key=>$value){
         $muscles[$key] += $value * $user->program->weeks;
@@ -65,9 +72,9 @@ foreach ($user->program->workouts as $workout){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-    <?php include "../templates/header.php" ?>
+    <?php include "../templates/header.php"; // print header template ?>
     <main class="my-program">
         <div class="container">
             <section class="day-workouts">
@@ -76,13 +83,17 @@ foreach ($user->program->workouts as $workout){
                     <!-- first slide -->
                     <swiper-slide class="day-workouts__slide">
                         <?php
+                            // Display placeholder for days before the first workout of the week
                             for ($j = 0; $j < $weekday_start; $j++){
                                 echo render(array("{{ day }}" => get_day($j)), "../templates/out_of_workout.html");
                             }
+                            // Display workout information for the current week
                             for ($j = $weekday_start; $j < 7; $j++){
+                                // get workout information and check if it's completed
                                 $workout = $user->program->workouts[$j];
                                 $is_done = $workout->is_done($conn, $user->get_id(), $user->program->date_start - $weekday_start * 86400 + $j * 86400);
                                 $is_workout = $workout->print_workout_info_block($j, 1, $user->get_id(), $is_done);
+                                // Update counters for total and completed workouts
                                 $cnt_workouts_all += (int)!$workout->holiday;
                                 $cnt_workouts_done += (int)$is_done;
                             }
@@ -92,7 +103,7 @@ foreach ($user->program->workouts as $workout){
 
                     $from = 0;
                     if ($weekday_start) $from = 1;
-                    for ($i = $from; $i < $user->program->weeks; $i++){ ?>
+                    for ($i = $from; $i < $user->program->weeks; $i++){ // Slides for next weeks ?>
                     <swiper-slide class="day-workouts__slide">
                         <?php
                         for ($j = 0; $j < 7; $j ++){
@@ -109,14 +120,14 @@ foreach ($user->program->workouts as $workout){
                         <!-- last slide -->
                         <swiper-slide class="day-workouts__slide">
                             <?php
-                            for ($j = 0; $j < $weekday_start; $j++){
+                            for ($j = 0; $j < $weekday_start; $j++){ // Display workouts for days after the last workout of the week
                                 $workout = $user->program->workouts[$j];
                                 $is_done = $workout->is_done($conn, $user->get_id(), $user->program->date_start - $weekday_start * 86400 + $j * 86400 + ($user->program->weeks - 1) * 604800);
                                 $is_workout = $workout->print_workout_info_block($j, 1, $user->get_id(), $is_done);
                                 $cnt_workouts_all += (int)!$workout->holiday;
                                 $cnt_workouts_done += (int)$is_done;                            }
 
-                            for ($j = $weekday_start; $j < 7; $j++){
+                            for ($j = $weekday_start; $j < 7; $j++){ // Display placeholder for days without workouts at the end of the last week
                                 echo render(array("{{ day }}" => get_day($j)), "../templates/out_of_workout.html");
                             }
                             ?>
@@ -124,7 +135,7 @@ foreach ($user->program->workouts as $workout){
                     <?php } ?>
                 </swiper-container>
             </section>
-            <?php $diagram_muscles = json_encode(array($muscles['arms'], $muscles['legs'], $muscles['chest'], $muscles['back'], $muscles['press'], $muscles['cardio'])); ?>
+            <?php $diagram_muscles = json_encode(array($muscles['arms'], $muscles['legs'], $muscles['chest'], $muscles['back'], $muscles['press'], $muscles['cardio'])); // set muscle groups data ?>
             <section class="my-program__info">
                 <section class="my-program__statistic">
                     <section class="my-program__muscle-groups">
@@ -133,33 +144,33 @@ foreach ($user->program->workouts as $workout){
                     </section>
                     <section class="my-program__statistic-content">
                         <section class="my-program__statistic-all">
-                            <p class="my-program__statistic-all-item">Всего тренировок: <span><?php echo $user->program->count_workouts(); ?></span></p>
-                            <p class="my-program__statistic-all-item">Всего упражнений: <span><?php echo $user->program->count_exercises(); ?></span></p>
+                            <p class="my-program__statistic-all-item">Всего тренировок: <span><?php echo $user->program->count_workouts(); // number of all trainings ?></span></p>
+                            <p class="my-program__statistic-all-item">Всего упражнений: <span><?php echo $user->program->count_exercises(); // number of all exercices ?></span></p>
                         </section>
                         <section class="my-program__progress">
                             <div class="my-program__progress-item">
                                 <div class="my-program__progress-percent">
-                                    <?php echo round($cnt_workouts_done / $cnt_workouts_all, 2) * 100; ?> %
+                                    <?php echo round($cnt_workouts_done / $cnt_workouts_all, 2) * 100; // progress of completed part of program ?> %
                                 </div>
                                 <h3 class="my-program__progress-item-title">Выполнен(но)</h3>
-                                <p class="my-program__progress-item-text">Тренировок: <span><?php echo $cnt_workouts_done; ?></span></p>
+                                <p class="my-program__progress-item-text">Тренировок: <span><?php echo $cnt_workouts_done; // percents of completed workout?></span></p>
                             </div>
                             <div class="my-program__progress-item">
                                 <div class="my-program__progress-percent">
-                                    <?php echo round(($cnt_workouts_all - $cnt_workouts_done) / $cnt_workouts_all, 2) * 100; ?> %
+                                    <?php echo round(($cnt_workouts_all - $cnt_workouts_done) / $cnt_workouts_all, 2) * 100; // progress of remaining part of program ?> %
                                 </div>
                                 <h3 class="my-program__progress-item-title">Осталось(ся)</h3>
-                                <p class="my-program__progress-item-text">Тренировок: <span><?php echo $cnt_workouts_all - $cnt_workouts_done; ?></span></p>
+                                <p class="my-program__progress-item-text">Тренировок: <span><?php echo $cnt_workouts_all - $cnt_workouts_done; // percents of remaining workout ?></span></p>
                             </div>
                         </section>
                     </section>
                 </section>
             </section>
             <form action="" method="post">
-                <?php if ($user->get_auth()){ ?>
+                <?php if ($user->get_auth()){ // if user is authenticated ?>
                     <input type="hidden" name="end" value="1">
                     <button type="submit" class="button-text my-program__finish">Завершить досрочно</button>
-                <?php } else if (!$user->get_auth() && !$user_data->set_program($conn) && $user_data->get_status() == "user" && $user_data->get_status() != "coach" && $user_data->get_status() != "doctor") { ?>
+                <?php } else if (!$user->get_auth() && !$user_data->set_program($conn) && $user_data->get_status() == "user" && $user_data->get_status() != "coach" && $user_data->get_status() != "doctor") { // if the user is watching other program?>
                     <button class="button-text my-program__friend-program" type="button">Начать эту программу</button>
                 <?php } ?>
             </form>
@@ -187,10 +198,10 @@ foreach ($user->program->workouts as $workout){
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        let friendProgramAddButton = document.querySelector('.popup-exercise__program-add .popup-exercise__submit-button');
-        let dateWokoutInput = document.querySelector('.popup-exercise__program-add .popup-exercise__info-input[type="date"]');
+        let friendProgramAddButton = document.querySelector('.popup-exercise__program-add .popup-exercise__submit-button'); // add friend program button
+        let dateWokoutInput = document.querySelector('.popup-exercise__program-add .popup-exercise__info-input[type="date"]'); // date of workout startting
 
-        document.querySelector('.popup-exercise__program-add .popup-exercise__info-input[type="number"]').addEventListener('input', function(){
+        document.querySelector('.popup-exercise__program-add .popup-exercise__info-input[type="number"]').addEventListener('input', function(){ // if weeks == 0, changing the button to the type 'button'
             if(this.value.length == 0){
                 friendProgramAddButton.type = 'button';
             }
@@ -199,8 +210,8 @@ foreach ($user->program->workouts as $workout){
             }
         });
 
-        friendProgramAddButton.addEventListener('click', function(){
-            if (!dateWokoutInput.value) {
+        friendProgramAddButton.addEventListener('click', function(){ // when add friend program button is clicked
+            if (!dateWokoutInput.value) { // if no start date is selected
 				// set today's date
 				const todayDate = new Date();
 				let year = todayDate.getFullYear();
@@ -214,7 +225,7 @@ foreach ($user->program->workouts as $workout){
 					day = `0${day}`;
 				}
 
-				const formattedDate = `${year}-${month}-${day}`;
+				const formattedDate = `${year}-${month}-${day}`; // set today's date
 
 				// set today's date in input
 				dateWokoutInput.value = formattedDate;
@@ -228,7 +239,7 @@ foreach ($user->program->workouts as $workout){
 
         // popup window for duration of program values
         if(programAddButton){
-            programAddButton.addEventListener('click', function(){
+            programAddButton.addEventListener('click', function(){ // open popup window
                 programAddPopup.classList.add("open");
             });
         }
@@ -236,7 +247,7 @@ foreach ($user->program->workouts as $workout){
         // buttons to close popup windows
 		const closeBtn = document.querySelectorAll('.popup-exercise__close-button');
 		for(let i = 0; i < closeBtn.length; i++){
-			closeBtn[i].addEventListener('click', function(){
+			closeBtn[i].addEventListener('click', function(){ // open popup window
 				programAddPopup.classList.remove("open");
 			});
 		}
@@ -247,10 +258,6 @@ foreach ($user->program->workouts as $workout){
             }
 		});
 
-		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
-			event.isClickWithInModal = true;
-		});
-
 
         // Workout items
         let workoutItemArr = document.querySelectorAll('.day-workouts__card-content');
@@ -259,7 +266,7 @@ foreach ($user->program->workouts as $workout){
 
         for(let i = 0; i < workoutItemArr.length; i++){
             if(workoutItemArr[i].clientHeight > maxWorkoutItemHeight){
-                maxWorkoutItemHeight = workoutItemArr[i].clientHeight;
+                maxWorkoutItemHeight = Math.max(maxWorkoutItemHeight, workoutItemArr[i].clientHeight);
             }
         }
 
@@ -305,13 +312,6 @@ foreach ($user->program->workouts as $workout){
                 }
             },
         });
-
-
-        // Height of friends block
-        let friendsBlock = document.querySelector('.friends-block');
-        if(friendsBlock){
-            friendsBlock.style.cssText = `height: ${document.querySelector('.my-program__statistic').clientHeight}px;`;
-        }
     </script>
 </body>
 </html>

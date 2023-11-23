@@ -1,33 +1,34 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
-$user_data->check_the_login();
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
+$user_data->check_the_login(); // Checking user authentication
 
 # rate this exercise
-if (isset($_POST["rate_id"])){
+if (isset($_POST["rate_id"])){ // If a POST request is received for exercise rating
     $exercise = new Exercise($conn, $_POST["rate_id"]);
     if (!$exercise->is_rated($user_data->get_id())){
+		// If the user hasn't rated the exercise yet, insert the user's rating into the database
         $sql = "INSERT INTO exercise_ratings(user, exercise, rate) VALUES (".$user_data->get_id().", ".$_POST["rate_id"].", ".$_POST["exercise_rate"].")";
         if (!$conn->query($sql))
-            echo $conn->error;
+            echo $conn->error; // Display an error if the query fails
     }
-    unset($exercise);
+    unset($exercise); // Clearing the exercise variable from memory
 }
 
 # feature
-if (isset($_POST['featured'])){
+if (isset($_POST['featured'])){ // If there's a POST request to change the featured status
     $user_data->change_featured($conn, $_POST['featured']);
 }
 # add
-if (isset($_POST['add'])){
+if (isset($_POST['add'])){ // If there's a POST request to add an exercise
     $user_data->add_exercise($conn, $_POST['add']);
 }
 # delete
-if (isset($_POST['delete'])){
+if (isset($_POST['delete'])){ // If there's a POST request to delete an exercise
     $user_data->delete_exercise($conn, $_POST['delete']);
 }
 
-if (isset($_GET['my']) && is_numeric($_GET['my'])){
+if (isset($_GET['my']) && is_numeric($_GET['my'])){ // Checking and setting the 'my' parameter in the GET request
     $my = $_GET['my'];
 }else{
     $my = 1;
@@ -35,9 +36,9 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-	<?php include "../templates/header.php" ?>
+	<?php include "../templates/header.php"; // print header template ?>
 
 	<!-- Exercises navigation -->
 	<nav class="exercises-nav">
@@ -162,23 +163,23 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 			</section>
 			<!-- Exercises array -->
 			<?php
-			if ($my){
-				if (count($user_data->my_exercises) > 0){
+			if ($my){ // Checking the value of $my
+				if (count($user_data->my_exercises) > 0){ // Displaying user's exercises in a form
 					echo "<form method='post' class='exercise-block'>";
-					foreach ($user_data->my_exercises as $exercise_id){
+					foreach ($user_data->my_exercises as $exercise_id){ // getting and printing user's exercise details
 						$exercise = new Exercise($conn, $exercise_id);
 						$is_featured = $exercise->is_featured($user_data);
 						$exercise->print_it($conn, $is_featured, 1);
 					}
 					echo "</form>";
-				}else{
+				}else{ // If the user has no personal exercises, prompt them to add exercises from the common list
 					echo "<h1 class='exercises__none'>У вас нет своих упражнений. Вы можете добавить их из общего списка.</h1>";
 				}
-			}else{
-				$select_sql = "SELECT id FROM exercises";
+			}else{ // print all list of exercises
+				$select_sql = "SELECT id FROM exercises"; // Displaying all exercises retrieved from the database in a form
 				if ($select_result = $conn->query($select_sql)){
 					echo "<form method='post' class='exercise-block'>";
-					foreach ($select_result as $item){
+					foreach ($select_result as $item){ // getting and printing all exercises from the database
 						$exercise = new Exercise($conn, $item['id']);
 						$is_featured = $exercise->is_featured($user_data);
 						$is_mine = $exercise->is_mine($user_data);
@@ -186,7 +187,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 					}
 					echo "</form>";
 				}else{
-					echo $conn->error;
+					echo $conn->error; // Displaying an error if the query fails
 				}
 			}
 			?>
@@ -229,7 +230,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 		</section>
 	</main>
 
-	<?php include "../templates/footer.html" ?>
+	<?php include "../templates/footer.html"; // footer template ?>
 
 	<!-- TESTS FOR SEARCH FUNCTION -->
 	<!-- <script src="../tests/test_search_input.js"></script> -->
@@ -241,12 +242,12 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
         let infoBlock = document.querySelectorAll('.exercise-item__info-content');
 
         for(let i = 0; i < infoExerciseButton.length; i++){
-            infoExerciseButton[i].addEventListener('click', function(){
+            infoExerciseButton[i].addEventListener('click', function(){ // open exercise's info
                 infoBlock[i].style.cssText = `top: -1%;`;
             });
         }
         for(let i = 0; i < closeInfoExerciseButton.length; i++){
-            closeInfoExerciseButton[i].addEventListener('click', function(){
+            closeInfoExerciseButton[i].addEventListener('click', function(){ // close exercise's info
                 infoBlock[i].style.cssText = `top: -101%;`;
             });
         }
@@ -260,18 +261,18 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 
 		for(let i = 0; i < FilterButtonsArr.length; i++){
 			FilterButtonsArr[i].addEventListener('click', function(){
-				if(FilterBlocksArr[i].clientHeight == 0){
+				if(FilterBlocksArr[i].clientHeight == 0){ // open filter item's list
 					FilterBlocksArr[i].style.cssText = `height: auto;`;
                     FilterButtonsArrowArr[i].style.cssText = `transform: rotate(180deg);`;
 				}
-				else{
+				else{ // close filter item's list
 					FilterBlocksArr[i].style.cssText = `height: 0px`;
                     FilterButtonsArrowArr[i].style.cssText = `transform: rotate(0deg);`;
 				}
 			});
 		}
 
-		FilterButtonsArr[0].click();
+		FilterButtonsArr[0].click(); // open first filter item's list
 
 
 		//Difficult of exercises
@@ -280,7 +281,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 
 		for(let i = 0; i < difficultCountArr.length; i++){
 			difficultBlockArr[i].innerHTML = '';
-            for(let j = 0; j < 5; j++){
+            for(let j = 0; j < 5; j++){ // create difficult circles
 				let newElem = document.createElement('div');
 				newElem.classList.add('exercise-item__difficult-item');
 				if(j > Number(difficultCountArr[i].innerHTML) - 1){
@@ -330,17 +331,13 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 		// Buttons to close popup window
 		const closeBtn = document.querySelector('.popup-exercise__close-button');
 		closeBtn.addEventListener('click', function(){
-			popupExerciseWindow.classList.remove("open");
+			popupExerciseWindow.classList.remove("open"); // close popup window
 		});
 
 		window.addEventListener('keydown', (e) => {
 		if(e.key == "Escape"){
-			popupExerciseWindow.classList.remove("open");
+			popupExerciseWindow.classList.remove("open");  // close popup window if escaped is pressed
 		}
-		});
-
-		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
-			event.isClickWithInModal = true;
 		});
 
 
@@ -412,7 +409,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 			}
 
 			
-			if(MainFilter.value == 'default'){
+			if(MainFilter.value == 'default'){ // if default print all exercises cards
 				ExercisesArray.forEach(function(elem){
 					elem.classList.remove('hide');
 				});
@@ -425,7 +422,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 				}
 			}
 
-			if(MainFilter.value == 'favorites'){
+			if(MainFilter.value == 'favorites'){ // print favorite exercises cards
 				ExercisesArray.forEach(function(elem){
 					elem.classList.add('hide');
 				});
@@ -436,7 +433,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 					cur_exercise.classList.remove('hide');
 				}
 			}
-			if(MainFilter.value == 'low-rating'){
+			if(MainFilter.value == 'low-rating'){ // print exercises cards sorted by low rating
 				for(let i = 0; i < ExercisesRatingSorted.length; i++){
 					if(ExercisesArray[ExercisesRatingSorted[i].number].innerHTML.split(' ') != ''){
 						if(exerciseBlock){
@@ -445,7 +442,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 					}
 				}
 			}
-			if(MainFilter.value == 'high-rating'){
+			if(MainFilter.value == 'high-rating'){ // print exercises cards sorted by high rating
 				for(let i = ExercisesRatingSorted.length - 1; i >= 0; i--){
 					if(ExercisesArray[ExercisesRatingSorted[i].number].innerHTML.split(' ') != ''){
 						if(exerciseBlock){
@@ -454,7 +451,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 					}
 				}
 			}
-			if(MainFilter.value == 'low-difficult'){
+			if(MainFilter.value == 'low-difficult'){ // print exercises cards sorted by low difficult
 				for(let i = 0; i < ExercisesDifficultSorted.length; i++){
 					if(ExercisesArray[ExercisesDifficultSorted[i].number].innerHTML.split(' ') != ''){
 						if(exerciseBlock){
@@ -463,7 +460,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 					}
 				}
 			}
-			if(MainFilter.value == 'high-difficult'){
+			if(MainFilter.value == 'high-difficult'){ // print exercises cards sorted by high difficult
 				for(let i = ExercisesDifficultSorted.length - 1; i >= 0; i--){
 					if(ExercisesArray[ExercisesDifficultSorted[i].number].innerHTML.split(' ') != ''){
 						if(exerciseBlock){
@@ -477,7 +474,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 
 		// filter search logic
 		searchButton.addEventListener('click', function(){
-			MainFilter.value = 'default';
+			MainFilter.value = 'default'; // set main filter to default
 
 			if(exerciseBlock){
 				exerciseBlock.innerHTML = '';
@@ -486,7 +483,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 			for(let i = 0; i < ExercisesArray.length; i++){
 				let exerciseCheckMuscles = false;
 				let checkCount = 0;
-				for(let j = 0; j < MuscleGroupInputs.length; j++){
+				for(let j = 0; j < MuscleGroupInputs.length; j++){ // ckech muscle groups inputs
 					if(MuscleGroupInputs[j].checked == true && MuscleGroupLabels[j].innerHTML == ExercisesMuscleGroups[i].innerHTML){
 						exerciseCheckMuscles = true;
 					}
@@ -503,7 +500,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 				let exerciseCheckDifficult = false;
 				checkCount = 0;
 
-				for(let j = 0; j < DifficultInputs.length; j++){
+				for(let j = 0; j < DifficultInputs.length; j++){ // ckech difficult inputs
 					if(DifficultInputs[j].checked == true && DifficultLabels[j].innerHTML == difficultCountArr[i].innerHTML){
 						exerciseCheckDifficult = true;
 					}
@@ -520,7 +517,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 				let exerciseCheckRating = false;
 				checkCount = 0;
 
-				for(let j = 0; j < RatingInputs.length; j++){
+				for(let j = 0; j < RatingInputs.length; j++){ // ckech rating inputs
 					if(RatingInputs[j].checked == true && parseFloat(RatingLabels[j].innerHTML.split(' ')[1]) <= parseFloat(ExercisesRating[i].innerHTML.split(' '))){
 						exerciseCheckRating = true;
 					}
@@ -533,7 +530,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 					exerciseCheckRating = true;
 				}
 
-				if(exerciseCheckMuscles && exerciseCheckDifficult && exerciseCheckRating && exerciseBlock){
+				if(exerciseCheckMuscles && exerciseCheckDifficult && exerciseCheckRating && exerciseBlock){ // if the exercise fits the condition, then we output it
 					exerciseBlock.appendChild(ExercisesArray[i]);
 				}
 			}
@@ -607,7 +604,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 				for(let i = 0; i < allFilterInputsChecked.length; i++){
 					allFilterInputsChecked[i] = allFilterInputs[i].checked;
 				}
-				localStorage.setItem('allFilterInputsChecked', allFilterInputsChecked);
+				localStorage.setItem('allFilterInputsChecked', allFilterInputsChecked); // set data to localstorage
 			});
 		}
 

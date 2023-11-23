@@ -1,12 +1,12 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body class="other-cover">
-    <?php include "../templates/header.php" ?>
+    <?php include "../templates/header.php"; // print header template ?>
 
     <main class="other-block">
         <div class="container">
@@ -23,6 +23,6 @@ include "../templates/settings.php";
 		</div>
     </main>
 
-    <?php include "../templates/footer.html" ?>
+    <?php include "../templates/footer.html"; // print footer template ?>
 </body>
 </html>

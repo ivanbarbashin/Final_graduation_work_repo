@@ -1,12 +1,12 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php";  // Include functions file
+include "../templates/settings.php"; // Include settings file
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-    <?php include "../templates/header.php" ?>
+    <?php include "../templates/header.php"; //print header template ?>
 
 	<main class="c-program-info">
 		<div class="container">
@@ -25,6 +25,6 @@ include "../templates/settings.php";
 		<a class="button-text c-program-info__link" href="c_program.php"><p>СОЗДАТЬ ПРОГРАММУ</p> <img src="../img/arrow_white.svg" alt=""></a>
 	</main>
 
-    <?php include "../templates/footer.html" ?>
+    <?php include "../templates/footer.html"; //print footer template ?>
 </body>
 </html>

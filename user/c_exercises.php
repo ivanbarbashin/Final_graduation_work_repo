@@ -1,22 +1,22 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
-$user_data->check_the_login();
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
+$user_data->check_the_login(); // Check user login status
 
-if (empty($_SESSION['workout'])){
+if (empty($_SESSION['workout'])){ // Initialize $_SESSION['workout'] array
     $_SESSION['workout'] = array();
 }
 
-if (isset($_POST['featured'])){
+if (isset($_POST['featured'])){ // Check if 'featured' value is set in POST data, then update user's featured status
     $user_data->change_featured($conn, $_POST['featured']);
 }
 
-if (isset($_POST['reps']) && isset($_POST['approaches'])){
+if (isset($_POST['reps']) && isset($_POST['approaches'])){ // If 'reps' and 'approaches' values are set in POST data, create a User_Exercise object and add it to the session
     $user_exercise = new User_Exercise($conn, $_POST["id"], $_POST['reps'], $_POST['approaches']);
     array_push($_SESSION['workout'], $user_exercise);
 }
 
-if (isset($_GET['my']) && is_numeric($_GET['my'])){
+if (isset($_GET['my']) && is_numeric($_GET['my'])){ // Determine the value of 'my' variable based on the GET parameter 'my' or set a default value
     $my = $_GET['my'];
 }else{
     $my = 1;
@@ -24,9 +24,9 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-	<?php include "../templates/header.php" ?>
+	<?php include "../templates/header.php"; //print header template ?>
 
 	<!-- Exercise navigation -->
 	<nav class="exercises-nav">
@@ -152,21 +152,21 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 			</section>
 			<!-- Exercises array -->
 			<?php
-			if ($my){
-				if (count($user_data->my_exercises) > 0){
+			if ($my){ // Checking the value of $my
+				if (count($user_data->my_exercises) > 0){ // Displaying user's exercises in a form
 					echo "<form method='post' class='exercise-block'>";
 					foreach ($user_data->my_exercises as $exercise_id){
-                        if (!in_workout($_SESSION["c_workout"], $exercise_id)) {
+                        if (!in_workout($_SESSION["c_workout"], $exercise_id)) { // getting and printing user's exercise details
                             $exercise = new Exercise($conn, $exercise_id);
                             $is_featured = $exercise->is_featured($user_data);
                             $exercise->print_it($conn, $is_featured, 1, 1);
                         }
 					}
 					echo "</form>";
-				}else{
+				}else{ // If the user has no personal exercises, prompt them to add exercises from the common list
 					echo "<h1 class='exercises__none'>У Вас нет своих упражнений. Вы можете добавить их на вкладке 'Упражнения'.</h1>";
 				}
-			}else{
+			}else{ // print all list of exercises
 				$select_sql = "SELECT id FROM exercises";
 				if ($select_result = $conn->query($select_sql)){
                     echo "<form method='post' class='exercise-block'>";
@@ -180,7 +180,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
                     }
 					echo "</form>";
 				}else{
-					echo $conn->error;
+					echo $conn->error; // Displaying an error if the query fails
 				}
 			}
 			?>
@@ -208,7 +208,7 @@ if (isset($_GET['my']) && is_numeric($_GET['my'])){
 		</section>
 	</main>
 
-	<?php include "../templates/footer.html" ?>
+	<?php include "../templates/footer.html"; // footer template ?>
 
 	<script>
 		let exerciseAddButton = document.querySelector('.popup-exercise__add-button');

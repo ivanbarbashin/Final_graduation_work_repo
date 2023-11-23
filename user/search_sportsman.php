@@ -1,23 +1,23 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 
-if ($user_data->get_status() != "coach" && $user_data->get_status() != "doctor")
+if ($user_data->get_status() != "coach" && $user_data->get_status() != "doctor") // Checking user status; if not coach or doctor, redirect to index
     header("Location: ../index.php");
 
-$sportsmen = $user_data->get_sportsmen_advanced($conn);
+$sportsmen = $user_data->get_sportsmen_advanced($conn); // Fetching advanced sportsmen data for the logged-in user
 
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-    <?php include "../templates/header.php" ?>
+    <?php include "../templates/header.php"; // print header template ?>
 
 	<nav class="users-search-nav">
 		<div class="container">
 			<!-- Buttons to (sub / unsub) users -->
-            <a class="button-text users-search-nav__item" href="requests.php">Новые заявки (<?php echo count($user_data->get_requests()); ?>)<img src="../img/application.svg" alt=""></a>
+            <a class="button-text users-search-nav__item" href="requests.php">Новые заявки (<?php echo count($user_data->get_requests()); // print number of new applications ?>)<img src="../img/application.svg" alt=""></a>
 			<!-- Exercise search -->
             
 			<form method="post" class="users-search-nav__search">
@@ -30,13 +30,13 @@ $sportsmen = $user_data->get_sportsmen_advanced($conn);
 
 	<main class="users-list">
 		<div class="container">
-            <?php foreach ($sportsmen as $sportsman) print_sportsman_block($conn, $sportsman); ?>
+            <?php foreach ($sportsmen as $sportsman) print_sportsman_block($conn, $sportsman); // Loop through each sportsman and print their block using the print_sportsman_block function ?>
 		</div>
-        <?php if (count($sportsmen) == 0){ ?>
+        <?php if (count($sportsmen) == 0){ // If no sportsmen found, display a message indicating that no users were found ?>
             <p class="users-list__title-none">Пользователи не найдены</p>
         <?php } ?>
 
-    <?php include "../templates/footer.html" ?>
+    <?php include "../templates/footer.html"; // print footer template ?>
     <script>
         // Exercise search
 		const search_input = document.querySelector('.users-search-nav__search-input');

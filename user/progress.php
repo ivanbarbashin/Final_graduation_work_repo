@@ -1,18 +1,21 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 
-if (isset($_GET["user"]) && is_numeric($_GET["user"]))
+if (isset($_GET["user"]) && is_numeric($_GET["user"])) // Fetch user information based on GET parameters or default to the current user
     if ($_GET["user"] == $user_data->get_id())
-        $user = $user_data;
+        $user = $user_data; // Current user
     else
-        $user = new User($conn, $_GET["user"]);
+        $user = new User($conn, $_GET["user"]); // Other user
 else
-    $user = $user_data;
+    $user = $user_data; // Default to current user
 
+// Update user's physical data if provided in POST
 if ($user->get_auth() && isset($_POST["height"]) && isset($_POST["weight"]) && is_numeric($_POST["height"]) && is_numeric($_POST["weight"]) && $_POST["height"] >= 0 && $_POST["weight"] >= 0){
     $user->update_phys($conn, $_POST["height"], $_POST["weight"]);
 }
+
+// Get workout history for the user and initialize muscle-related variables
 $user->get_workout_history($conn);
 $muscles = array(
     "arms" => 0,
@@ -24,6 +27,7 @@ $muscles = array(
     "cnt" => 0
 );
 
+// Count exercises, track time spent, and muscle usage from workout history
 $exercise_cnt = 0;
 $time_cnt = 0;
 
@@ -38,26 +42,28 @@ foreach ($user->workout_history as $item){
         $exercise_cnt++;
     }
 }
-$time_cnt = round($time_cnt/60, 0);
+$time_cnt = round($time_cnt/60, 0); // Convert time spent to minutes
 
+// Retrieve and organize user's physical updates (height and weight) over time into arrays
 $user->get_phys_updates($conn);
 $height_array = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 $weight_array = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 $date_start = mktime(0, 0, 0, 1, 1, date("Y"));
 
-if (count($user->phys_updates) != 0){
-    $month_array = array($date_start);
+if (count($user->phys_updates) != 0){ // Checking if there are physical updates for the user
+    $month_array = array($date_start); // Creating an array to hold month timestamps starting from January 1st of the current year
     for ($i = 2; $i <= 13; $i++){
-        array_push($month_array, mktime(0, 0, 0, $i, 1, date("Y")));
+        array_push($month_array, mktime(0, 0, 0, $i, 1, date("Y"))); // Generating timestamps for the 1st day of each month
     }
-    foreach ($user->phys_updates as $key=>$value){
-        if ((int)$key < $month_array[0])
+    foreach ($user->phys_updates as $key=>$value){ // Iterating through the user's physical updates
+        if ((int)$key < $month_array[0]) // Checking if the timestamp is earlier than the first month, exiting loop if so
             break;
-        for ($i = 0; $i < 12; $i++){
-            if (($height_array[$i] == 0 and $weight_array[$i] == 0) and $month_array[$i] <= (int)$key && (int)$key < $month_array[$i + 1]){
+        for ($i = 0; $i < 12; $i++){ // Looping through the month_array to check for matching months
+            if (($height_array[$i] == 0 and $weight_array[$i] == 0) and $month_array[$i] <= (int)$key && (int)$key < $month_array[$i + 1]){ // Checking if height and weight for a specific month are not set (0) and if the update timestamp is within that month
+                // Setting the height and weight for the corresponding month
                 $height_array[$i] = $value["height"];
                 $weight_array[$i] = $value["weight"];
-                break;
+                break; // Exiting the loop once the values are set for the month
             }
         }
     }
@@ -65,9 +71,9 @@ if (count($user->phys_updates) != 0){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-	<?php include "../templates/header.php" ?>
+	<?php include "../templates/header.php"; // print header teamlate ?>
 
 	<main class="progress-block">
 		<div class="container">
@@ -84,7 +90,7 @@ if (count($user->phys_updates) != 0){
 					<canvas id="trainingStatisticChart"></canvas>
 				</section>
 				<!-- Last trainings block -->
-                <?php $user->print_workout_history($conn); ?>
+                <?php $user->print_workout_history($conn); // print block of user's last trainings ?>
 			</section>
 
 			<!-- Second part of statistic(training info and muscles & physical diagram) -->
@@ -111,7 +117,7 @@ if (count($user->phys_updates) != 0){
 					<section class="progress-block__physical-info">
 						<p class="progress-block__physical-info-item">Вес:  кг</p>
 						<p class="progress-block__physical-info-item">Рост: 0 см</p>
-                        <?php if ($user->get_auth()){ ?>
+                        <?php if ($user->get_auth()){ // Check if the user is authenticated ?>
 						    <button class="button-text progress-block__physical-info-button">Добавить данные<img src="../img/add.svg" alt=""></button>
                         <?php } ?>
 					</section>
@@ -142,33 +148,37 @@ if (count($user->phys_updates) != 0){
 				  <div class="progress-block__programm-info">
 					<div class="progress-block__programm-line">
 						<p class="progress-block__programm-percents"><?php
-                            if ($user->set_program($conn)){
-                                $user->program->set_additional_data($conn, $user->get_id());
+                            if ($user->set_program($conn)){ // Checking if the user's program is set
+                                $user->program->set_additional_data($conn, $user->get_id()); // Setting additional data for the user's program
+                                // Initializing variables
                                 $cnt_workouts_per_week = 0;
-                                foreach ($user->program->program as $workout)
+                                foreach ($user->program->program as $workout) // Counting the number of workouts per week in the program
                                     if ($workout != 0)
                                         $cnt_workouts_per_week++;
 
-                                $cnt_all_workouts = $cnt_workouts_per_week * $user->program->weeks;
+                                $cnt_all_workouts = $cnt_workouts_per_week * $user->program->weeks; // Calculating total workouts in the program
                                 $cnt_done = 0;
+
+                                // Calculating progress percentage based on completed workouts
                                 $progress = (time() - $user->program->date_start) / ($user->program->weeks * 604800) * 100;
                                 if ($cnt_all_workouts == 0){
-                                    echo 0;
+                                    echo 0; // Outputting 0 if there are no workouts in the program
                                 }else{
+                                    // Querying completed workouts for the user's program
                                     $sql = "SELECT id FROM workout_history WHERE user=".$user->get_id()." AND date_completed>=".$user->program->date_start;
                                     if ($result = $conn->query($sql)){
                                         foreach ($result as $item) $cnt_done++;
-                                        echo round(($cnt_done / $cnt_all_workouts) * 100, 0);
+                                        echo round(($cnt_done / $cnt_all_workouts) * 100, 0); // Outputting the progress percentage
                                     } else
-                                        echo 0;
+                                        echo 0; // Outputting 0 if there's an issue with the query
                                 }
                                 }else{
-                                echo 0;
+                                echo 0; // Outputting 0 if the user's program is not set
                             }
                             ?>%</p>
 						<div class="progress-block__programm-finish" class="finish"></div>
 					</div>
-					<a class="progress-block__programm-button" href="my_program.php?user=<?php echo $user->get_id(); ?>"><img src="../img/my_programm_black.svg" alt=""></a>
+					<a class="progress-block__programm-button" href="my_program.php?user=<?php echo $user->get_id(); // link to user's program ?>"><img src="../img/my_programm_black.svg" alt=""></a>
 				  </div>
 				</div>
 			</section>
@@ -194,13 +204,16 @@ if (count($user->phys_updates) != 0){
 	</main>
 
 
-	<?php include "../templates/footer.html"; ?>
+	<?php include "../templates/footer.html"; // print footer teamlate ?>
+
+    <!-- script for swiper -->
 	<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-element-bundle.min.js"></script>
+    <!-- script for charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        let physicEditInputs = document.querySelectorAll('.popup-physics-data__item-input'); // inputs to edit physic data
 
-        let physicEditInputs = document.querySelectorAll('.popup-physics-data__item-input');
-
+        // checking input values
         for(let i = 0; i < physicEditInputs.length; i++){
             physicEditInputs[i].addEventListener('input', function(){
                 if (this.value < 0) {
@@ -217,6 +230,7 @@ if (count($user->phys_updates) != 0){
         let periodSelects = document.querySelectorAll('.progress-block__physical-data-select');
         let periodForms = document.querySelectorAll('.progress-block__physical-data-form');
 
+        // get data from localstorage
         if(localStorage.getItem('trainingDataPeriod')){
             periodSelects[0].value = localStorage.getItem('trainingDataPeriod');
         }
@@ -226,7 +240,7 @@ if (count($user->phys_updates) != 0){
 
         // choose periods event
         for(let i = 0; i < periodSelects.length; i++) {
-            periodSelects[i].addEventListener('change', function(){
+            periodSelects[i].addEventListener('change', function(){ // if the period has been changed, set a new value in the localestorage and send the form
                 if(i == 0){
                     localStorage.setItem('trainingDataPeriod', periodSelects[i].value);
                 }
@@ -240,7 +254,7 @@ if (count($user->phys_updates) != 0){
 
         trainingPeriodArray = [];
         trainingPeriodData = [];
-        // period values
+        // period values(year or month)
         if(periodSelects[0].value == 'year'){
             trainingPeriodArray = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
             trainingPeriodData = <?php echo json_encode(get_graph_workout_data_year($user->workout_history)); ?>;
@@ -538,7 +552,7 @@ if (count($user->phys_updates) != 0){
         PhysicDataCurrent[0].innerHTML = `${weightArray[weightArray.length - 2]} кг`;
         PhysicDataCurrent[1].innerHTML = `${heightArray[heightArray.length - 2]} см`;
 
-        // edit event to edit physical data
+        // event to edit physical data
         if(PhysicDataEditButton){
             PhysicDataEditButton.addEventListener('click', function(){
                 PhysicDataPopup.classList.add("open");
@@ -554,14 +568,10 @@ if (count($user->phys_updates) != 0){
 			});
 		}
 
-		window.addEventListener('keydown', (e) => {
+		window.addEventListener('keydown', (e) => { // close popup physic edit if escape pressed
             if(e.key == "Escape" && PhysicDataEditButton){
                 PhysicDataEditButton.classList.remove("open");
             }
-		});
-
-		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
-			event.isClickWithInModal = true;
 		});
 
 
@@ -569,7 +579,7 @@ if (count($user->phys_updates) != 0){
         let progressProgrammLine = document.querySelector('.progress-block__programm-finish');
         let progressProgrammPercents = document.querySelector('.progress-block__programm-percents');
 
-        progressProgrammLine.style.cssText = `width: ${progressProgrammPercents.innerHTML};`;
+        progressProgrammLine.style.cssText = `width: ${progressProgrammPercents.innerHTML};`; // set width to visual block
     </script>
 
 

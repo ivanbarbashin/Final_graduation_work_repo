@@ -23,4 +23,3 @@ if ($_GET["id"] && $user_data->get_auth() && !in_array($_GET["id"], $user_data->
 }else{
     header("Location: ../index.php"); // Redirect to index page
 }
-?>

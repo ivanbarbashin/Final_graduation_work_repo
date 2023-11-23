@@ -1,55 +1,65 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 $request_flag = false;
-if (isset($_GET["user"]) && $_GET["user"] != $user_data->get_id()){
-    $user = new User($conn, $_GET["user"]);
-    $user_data->set_staff($conn);
-    $request_flag = $user_data->check_request($conn, $user->get_id());
-}else{
+if (isset($_GET["user"]) && $_GET["user"] != $user_data->get_id()){ // Check if accessing a specific user profile
+    // If accessing a different user profile, set the user variable accordingly
+    $user = new User($conn, $_GET["user"]); // creates a new User object based on the user ID retrieved from the $_GET parameters
+    $user_data->set_staff($conn); // set data related to staff within the $user_data object
+    $request_flag = $user_data->check_request($conn, $user->get_id()); // checking whether a request exists for the given user I
+}else{ // If no specific user is accessed, use the logged-in user's data
     $user = $user_data;
 }
+
+// Set user subscriptions, subscribers, and staff details
 $user->set_subscriptions($conn);
 $user->set_subscribers($conn);
 $user->set_staff($conn);
 
 # ---------------- avatar upload ------------------------
 
-if(isset($_POST['image_to_php']) && $user->get_auth()) {
-    $user->update_avatar($conn, $_POST['image_to_php']);
+if(isset($_POST['image_to_php']) && $user->get_auth()) { // check user avatar upload
+    $user->update_avatar($conn, $_POST['image_to_php']); // update user avatar
 }
 
-
+// Update user description based on form submission
 if (isset($_POST["change_disc"]) && $user->get_auth()){
-    $new_disc = trim($_POST["change_disc"]);
+    $new_disc = trim($_POST["change_disc"]); // Fetch new description and update user data
     if ($new_disc == ''){
         $new_disc = "Нет описания";
     }
-    $user->description = $new_disc;
+    $user->description = $new_disc; // Update description in the database
     $sql = "UPDATE users SET description='$new_disc' WHERE id=".$user->get_id();
     if (!$conn->query($sql)){
         echo $conn->error;
     }
 }
 
+// check updates for user type
 if (isset($_POST["type"])){
+    // Fetch new user type and update user data
     $type = (int)$_POST["type"];
     $user->type = $type;
+    // Update user type in the database
     $sql = "UPDATE users SET type=$type WHERE id=".$user->get_id();
     if (!$conn->query($sql)){
         echo $conn->error;
     }
 }
 
+// check user preparation updates(level of training)
 if (isset($_POST["prep"])){
+    // Fetch new preparation status and update user data
     $preparation = $_POST["prep"];
     $user->preparation = $preparation;
+    // Update user preparation status in the database
     $sql = "UPDATE users SET preparation=$preparation WHERE id=".$user->get_id();
     if (!$conn->query($sql)){
         echo $conn->error;
     }
 }
 
+// Update user's Telegram link if submitted
 if (isset($_POST["tg"]) && $_POST["tg"] != $user->tg){
     $tg=$_POST["tg"];
     $sql = "UPDATE users SET tg='$tg' WHERE id=".$user->get_id();
@@ -60,6 +70,7 @@ if (isset($_POST["tg"]) && $_POST["tg"] != $user->tg){
 
 }
 
+// Update user's VKontakte link if submitted
 if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
     $vk=$_POST["vk"];
     $sql = "UPDATE users SET vk='$vk' WHERE id=".$user->get_id();
@@ -71,9 +82,9 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <body>
-	<?php include "../templates/header.php"; ?>
+	<?php include "../templates/header.php"; // print header template ?>
 
 	<main class="user-block">
         <section class="preview_cover">
@@ -89,33 +100,34 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
 				<section class="user-about">
 					<!-- User avatar, name and surname -->
                     <section class="user-block__avatar">
+                        <!-- Form for uploading avatar -->
                         <form id="avatar_form" class="avatar" method="post">
-                            <img id="profileImage" src="<?php echo $user->get_avatar($conn); ?>">
+                            <img id="profileImage" src="<?php echo $user->get_avatar($conn); // User's avatar image ?>">
                             <input type="file" id="avatar_file" accept="image/*" />
-                            <?php if ($user->get_auth()){?>
+                            <?php if ($user->get_auth()){ //if the user is logged in current acc ?>
                             <label for="avatar_file" class="uppload_button">Выбрать фото</label>
                             <?php } ?>
                             <input type="hidden" id="image_to_php" name="image_to_php" value="">
                         </form>
                         <div class="user-block__avatar-name">
-                            <h1><?php echo $user->name . " " . $user->surname; ?></h1>
+                            <h1><?php echo $user->name . " " . $user->surname; // print user' mame and surname ?></h1>
                         </div>
                         <button class="user-block__avatar-more"><img src="../img/info.svg" alt=""><p>Подробнее</p></button>
-                        <?php if (!$user->get_auth() && in_array($user_data->get_id(), $user->subscribers)){ ?>
-                            <a class="button-text user-block__sub-button" href="unsub.php?id=<?php echo $user->get_id(); ?>">Отписаться</a>
+                        <?php if (!$user->get_auth() && in_array($user_data->get_id(), $user->subscribers)){ // Subscription button based on authentication status ?>
+                            <a class="button-text user-block__sub-button" href="unsub.php?id=<?php echo $user->get_id(); // unsub link ?>">Отписаться</a>
                         <?php }else if (!$user->get_auth()){ ?>
-                            <a class="button-text user-block__sub-button" href="sub.php?id=<?php echo $user->get_id(); ?>"><p>Подписаться</p><img src="../img/add.svg" alt=""></a>
+                            <a class="button-text user-block__sub-button" href="sub.php?id=<?php echo $user->get_id(); // sub link ?>"><p>Подписаться</p><img src="../img/add.svg" alt=""></a>
                         <?php } ?>
                     </section>
                     
                     <!-- User info text -->
 					<div class="user-about__description">
-                        <?php if ($user->description){ ?>
-						    <p class="user-about__description-text"><?php echo $user->description; ?></p>
-                        <?php } else{ ?>
+                        <?php if ($user->description){ // Check if the user has a description ?>
+						    <p class="user-about__description-text"><?php echo $user->description; // Display the user's description ?></p>
+                        <?php } else{ //  If no description exists, display this message ?>
                             <p class="user-about__description-text">Нет описания</p>
                         <?php } ?>
-                        <?php if ($user->get_auth()){ ?>
+                        <?php if ($user->get_auth()){ //Button to edit the description (only visible if user is authenticated) ?>
 						    <button class="user-about__description-button"><img src="../img/edit_gray.svg" alt="">Изменить</button>
                         <?php } ?>
 					</div>
@@ -124,9 +136,10 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
 				<section class="user-news">
 					<!-- News item -->
                     <?php
-                    if ($news = $user->get_my_news($conn)) {
-                        foreach ($news as $new){
-                            $date = date("d.m.Y", $new['date']);
+                    if ($news = $user->get_my_news($conn)) { // Fetch the user's news items from the database
+                        foreach ($news as $new){ // Iterate through the user's news items
+                            $date = date("d.m.Y", $new['date']); // Format the date for display
+                            // Define data to replace placeholders in the news item template
                             $replacements = array(
                                 "{{ user_name }}" => $new['name'].' '.$new['surname'],
                                 "{{ link }}" => '',
@@ -134,7 +147,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                                 "{{ message }}" => $new['message'],
                                 "{{ avatar }}" => $new['file']
                             );
-                            echo render($replacements, "../templates/news_item.html");
+                            echo render($replacements, "../templates/news_item.html"); // Render each news item using the provided template and replaced data
                         }
                     }?>
 				</section>
@@ -148,61 +161,63 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                     </div>
                     <!-- Friends swiper -->
                     <section class="friends-block__cover" navigation="true">
-                        <?php print_user_list($conn, $user->subscriptions); ?>
+                        <?php print_user_list($conn, $user->subscriptions); // print user's subscriptions ?>
 					</section>
                 </section>
-                <?php if ($user->get_status() == "user"){ ?>
+                <?php if ($user->get_status() == "user"){ // if staus is user ?>
                 <!-- User's staff (coach and doctor) -->
 				<section class="user-block__staff">
                     <!-- Coach info and buttons to chat, ptofile and delete -->
 					<div class="user-block__coach">
-                        <?php $has_coach = $user->coach != NULL; ?>
-						<p class="user-block__staff-title">Тренер: <span><?php if ($has_coach){ echo $user->coach->surname; }else{ echo "нет"; } ?></span></p>
+                        <?php $has_coach = $user->coach != NULL; // Check if the user has a coach ?>
+						<p class="user-block__staff-title">Тренер: <span><?php if ($has_coach){ echo $user->coach->surname; }else{ echo "нет"; } // if user has coach print it ?></span></p>
                         <?php if ($has_coach){ ?>
                             <!-- <button class="user-block__staff-button"><img src="../img/message.svg" alt=""></button> -->
                             <a href="profile.php?user=<?php echo $user->coach->get_id(); ?>" class="user-block__staff-button"><img src="../img/profile_black.svg" alt=""></a>
-                            <?php if ($user->get_auth()){ ?>
+                            <?php if ($user->get_auth()){ // if user is authenticated ?>
                                 <a href="delete_coach.php" class="user-block__staff-button"><img src="../img/delete_black.svg" alt=""></a>
                             <?php } ?>
-                        <?php }else{ ?>
+                        <?php }else{ // else print button to search users ?>
                             <a href="search_users.php" class="user-block__staff-button user-block__staff-button--add"><img src="../img/add_black.svg" alt=""></a>
                         <?php } ?>
 					</div>
                     <!-- Doctor info -->
 					<div class="user-block__doctor">
-                        <?php $has_doctor = $user->doctor != NULL; ?>
-						<p class="user-block__staff-title">Врач: <span><?php if ($has_doctor){ echo $user->doctor->surname; }else{ echo "нет"; } ?></span></p>
+                        <?php $has_doctor = $user->doctor != NULL; // Check if the user has a doctor ?>
+						<p class="user-block__staff-title">Врач: <span><?php if ($has_doctor){ echo $user->doctor->surname; }else{ echo "нет"; } // if user has doctor print it ?></span></p>
                         <?php if ($has_doctor){ ?>
                             <!-- <button class="user-block__staff-button"><img src="../img/message.svg" alt=""></button> -->
                             <a href="profile.php?user=<?php echo $user->doctor->get_id(); ?>" class="user-block__staff-button"><img src="../img/profile_black.svg" alt=""></a>
-                            <?php if ($user->get_auth()){ ?>
+                            <?php if ($user->get_auth()){ // if user is authenticated ?>
                                 <a href="delete_doctor.php" class="user-block__staff-button"><img src="../img/delete_black.svg" alt=""></a>
                             <?php } ?>
-                        <?php }else{ ?>
+                        <?php }else{ // else print button to search users ?>
                             <a href="search_users.php" class="user-block__staff-button"><img src="../img/add_black.svg" alt=""></a>
                         <?php } ?>
 					</div>
                     <!-- Count of subscribers and subscriptions -->
 					<div class="user-block__sub-count">
-						<p class="user-block__sub-count-item" href=""><span>Подписчики: <?php echo count($user->subscribers); ?></span></p>
-						<p class="user-block__sub-count-item" href=""><span>Подписки: <?php echo count($user->subscriptions); ?></span></p>
+						<p class="user-block__sub-count-item" href=""><span>Подписчики: <?php echo count($user->subscribers); // print count of subscribers ?></span></p>
+						<p class="user-block__sub-count-item" href=""><span>Подписки: <?php echo count($user->subscriptions); // print count of subscriptions ?></span></p>
 					</div>
 				</section>
 
-				<?php $user->print_workout_history($conn); ?>
+				<?php $user->print_workout_history($conn);  // print user's workout history ?>
 
                 <?php } ?>
                 <!-- Buttons to edit profile, search sportsmen and logout -->
 				<section class="user-block__buttons">
+                    <!-- Display 'Send Request' button under specific conditions -->
                     <?php if (!$user->get_auth() && $user_data->get_status() == "user" && (($user->get_status() == "coach" && $user_data->coach == NULL) || ($user->get_status() == "doctor" && $user_data->doctor == NULL)) && !$request_flag){ ?>
                         <a href="send_request.php?id=<?php echo $user->get_id();?>" class="button-text user-block__button"><p>Отправить заявку</p> <img src="../img/send.svg" alt=""></a>
                     <?php }
+                    // Display options for authenticated users
                     if ($user->get_auth()){ ?>
-                        <?php if ($user->set_program($conn)){ ?>
+                        <?php if ($user->set_program($conn)){ // Display link to 'My Program' if available ?>
                             <a href="my_program.php" class="button-text user-block__button">Моя программа<img src="../img/my_programm.svg" alt=""></a>
                         <?php } ?>
 					    <a href="../clear.php" class="button-text user-block__button-logout">Выйти <img src="../img/logout.svg" alt=""></a>
-                    <?php } else if ($user->set_program($conn)) { ?>
+                    <?php } else if ($user->set_program($conn)) { // Display link to user's program ?>
                         <a href="my_program.php?user=<?php echo $user->get_id(); ?>" class="button-text user-block__button">Программа пользователя<img src="../img/my_programm.svg" alt=""></a>
                     <?php } ?>
 				</section>
@@ -223,45 +238,45 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                     <!-- Люитель / профессионал / не указан -->
                     <div class="popup-user__info-item">
                         <p class="popup-user__info-item-name">Тип спортсмена</p>
-                        <p class="popup-user__info-item-info"><?php $user->print_type(); ?></p>
+                        <p class="popup-user__info-item-info"><?php $user->print_type(); // print type of user ?></p>
                     </div>
                 <?php } ?>
                 <?php if ($user->get_status() == "coach"){ ?>
                     <!-- Люитель / профессионал / не указан -->
                     <div class="popup-user__info-item">
                         <p class="popup-user__info-item-name">Тип тренера</p>
-                        <p class="popup-user__info-item-info"><?php $user->print_type(); ?></p>
+                        <p class="popup-user__info-item-info"><?php $user->print_type(); // print type of coach ?></p>
                     </div>
                 <?php } ?>
                 <?php if ($user->get_status() == "doctor"){ ?>
                     <!-- Люитель / профессионал / не указан -->
                     <div class="popup-user__info-item">
                         <p class="popup-user__info-item-name">Тип доктора</p>
-                        <p class="popup-user__info-item-info"><?php $user->print_type(); ?></p>
+                        <p class="popup-user__info-item-info"><?php $user->print_type(); // print type of doctor ?></p>
                     </div>
                 <?php } ?>
                 <?php if ($user->get_status() == "user"){ ?>
                     <!-- низкий / средний / высокий / не указан-->
                     <div class="popup-user__info-item">
                         <p class="popup-user__info-item-name">Уровень физической подготовки</p>
-                        <p class="popup-user__info-item-info"><?php $user->print_prep(); ?></p>
+                        <p class="popup-user__info-item-info"><?php $user->print_prep(); // print level of physical training ?></p>
                     </div>
                 <?php } ?>
                 <div class="popup-user__info-item">
                     <?php if ($user->tg != NULL){ ?>
                     <div class="popup-user__info-social">
                         <p class="popup-user__info-item-name popup-user__info-social-name">Телеграм:</p>
-                        <a href="<?php echo $user->tg; ?>"><img src="../img/tg.svg" alt=""></a>
+                        <a href="<?php echo $user->tg; // print tg link ?>"><img src="../img/tg.svg" alt=""></a>
                     </div>
                     <?php }
                     if ($user->vk != NULL){ ?>
                     <div class="popup-user__info-social popup-user__info-social-name">
                         <p class="popup-user__info-item-name popup-user__info-social-name">Вконтакте:</p>
-                        <a href="<?php echo $user->vk; ?>"><img src="../img/vk.svg" alt=""></a>
+                        <a href="<?php echo $user->vk; // print vk link ?>"><img src="../img/vk.svg" alt=""></a>
                     </div>
                     <?php } ?>
                 </div>
-                <?php if ($user->get_auth()){  ?>
+                <?php if ($user->get_auth()){ // if user is authenticated print edit bitton ?>
                     <button type="button" class="popup-user__edit-button"><img src="../img/edit_gray.svg" alt="">Изменить</button>
                 <?php } ?>
 			</section>
@@ -274,7 +289,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                 <!-- Спортсмен / тренер / врач -->
                 <div class="popup-user__info-item">
                 <p class="popup-user__info-item-name">Тип пользователя</p>
-                    <p class="popup-user__info-item-info popup-user__info-item-info--status"><?php $user->print_status(); ?></p>
+                    <p class="popup-user__info-item-info popup-user__info-item-info--status"><?php $user->print_status(); // print status of user ?></p>
                 </div>
                <?php switch ($user->get_status()){
                    case "coach":
@@ -358,7 +373,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
-        let userDescriptionEditBlock = document.querySelector('.popup-user__description-edit-text');
+        let userDescriptionEditBlock = document.querySelector('.popup-user__description-edit-text'); // description editting ckecks
         if(userDescriptionEditBlock){
             userDescriptionEditBlock.addEventListener('input', function(){
                 if(this.value.length > 500){
@@ -368,13 +383,14 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
         }
 
 
-        let socialLinksInputs = document.querySelectorAll('.popup-user__input');
-        let editSubmitButton = document.querySelector('.popup-user__save-button');
+        let socialLinksInputs = document.querySelectorAll('.popup-user__input'); // social links inputs
+        let editSubmitButton = document.querySelector('.popup-user__save-button'); // save changes button
 
+        // checks for links(tg and vk)
         if(socialLinksInputs){
             const telegramRegex = /^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\/[a-zA-Z0-9_]{5,}$/;
             socialLinksInputs[0].addEventListener('input', function(){
-                if (!telegramRegex.test(socialLinksInputs[0].value.trim()) && !(socialLinksInputs[0].value.trim().length == 0)) {
+                if (!telegramRegex.test(socialLinksInputs[0].value.trim()) && !(socialLinksInputs[0].value.trim().length == 0)) { // if link is not a telegram link add warning style
                     editSubmitButton.type = 'button';
                     socialLinksInputs[0].style.cssText = 'border: 1px solid #ff2323';
                 }
@@ -386,7 +402,7 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
 
             const vkRegex = /^(https?:\/\/)?(www\.)?(vk\.com)\/(id[0-9]+|[a-zA-Z0-9_\.]+)$/;
             socialLinksInputs[1].addEventListener('input', function(){
-                if (!vkRegex.test(socialLinksInputs[1].value.trim()) && !(socialLinksInputs[1].value.trim().length == 0)) {
+                if (!vkRegex.test(socialLinksInputs[1].value.trim()) && !(socialLinksInputs[1].value.trim().length == 0)) { // if link is not a vk link add warning style
                     editSubmitButton.type = 'button';
                     socialLinksInputs[1].style.cssText = 'border: 1px solid #ff2323';
                 }
@@ -545,11 +561,6 @@ if (isset($_POST["vk"]) && $_POST["vk"] != $user->vk){
                 DescriptionPopup.classList.remove("open");
             }
 		});
-
-		document.querySelector('.popup-exercise__content').addEventListener('click', event => {
-			event.isClickWithInModal = true;
-		});
-
     </script>
 
 

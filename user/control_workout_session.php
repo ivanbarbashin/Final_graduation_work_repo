@@ -1,16 +1,16 @@
 <?php
-include "../templates/func.php";
-include "../templates/settings.php";
+include "../templates/func.php"; // Include functions file
+include "../templates/settings.php"; // Include settings file
 
 if (empty($_GET["id"]) || !is_numeric($_GET["id"]))
-    header("Location: coach.php");
+    header("Location: coach.php"); // Redirect if the ID is empty or not numeric
 
-$workout = new Control_Workout($conn, $_GET["id"]);
-$cnt_apps = 0;
+$workout = new Control_Workout($conn, $_GET["id"]); // Creating a new Control_Workout object
+$cnt_apps = 0; // Initializing a variable for counting approaches
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php inc_head(); ?>
+<?php inc_head(); // print head.php ?>
 <form method="post" class="workout-session" action="end_control_workout.php">
 <header class="workout-session__header">
     <a href="../index.php" class="header__item header__item--logo header__item--logo--workout">
@@ -32,11 +32,11 @@ $cnt_apps = 0;
     <div class="container">
         <swiper-container class="session-exercises__swiper" pagination="true" pagination-clickable="true" navigation="true" space-between="30" loop="true">
             <!-- for loop -->
-            <?php foreach ($workout->exercises as $exercise){?>
+            <?php foreach ($workout->exercises as $exercise){ //Loop through each exercise in the Control_Workout object ?>
                 <swiper-slide class="session-exercises__slide">
                     <?php
-                    $cnt_apps += $exercise->approaches;
-                    $exercise->print_control_exercise($conn, 0, 1);
+                    $cnt_apps += $exercise->approaches; // Increment the count of approaches by the number of approaches for the current exercise
+                    $exercise->print_control_exercise($conn, 0, 1); // Print details of the current exercise
                     ?>
                 </swiper-slide>
             <?php } ?>
@@ -47,9 +47,9 @@ $cnt_apps = 0;
 <footer class="workout-session-footer workout-session-footer--с">
     <div class="workout-session-footer-cover">
         <h1 class="workout-session-footer__title">Осталось:</h1>
-        <h2 class="workout-session-footer__item"><span><?php echo count($workout->exercises); ?></span> упражнений(я)</h2>
+        <h2 class="workout-session-footer__item"><span><?php echo count($workout->exercises); // exercises number left ?></span> упражнений(я)</h2>
     </div>
-    <input type="hidden" name="id" value="<?php echo $_GET["id"]; ?>">
+    <input type="hidden" name="id" value="<?php echo $_GET["id"];?>">
     <button type="submit" class="button-text workout-session-footer__button">Завершить</button>
 
 </footer>
@@ -80,7 +80,7 @@ $cnt_apps = 0;
 
     for(let i = 0; i < difficultCountArr.length; i++){
         difficultBlockArr[i].innerHTML = '';
-        for(let j = 0; j < 5; j++){
+        for(let j = 0; j < 5; j++){ // create difficul circles
             let newElem = document.createElement('div');
             newElem.classList.add('exercise-item__difficult-item');
             if(j > Number(difficultCountArr[i].innerHTML) - 1){
@@ -140,7 +140,7 @@ $cnt_apps = 0;
 
     // workout logic when reperts' input edit
     for(let i = 0; i < repetDoneInputs.length; i++){
-        repetDoneInputs[i].addEventListener('input', function(){
+        repetDoneInputs[i].addEventListener('input', function(){ // if edit repets
             let completedCount = 0;
             let allCount = repetDoneInputs.length;
             for(let i = 0; i < repetDoneInputs.length; i++){
@@ -153,9 +153,12 @@ $cnt_apps = 0;
                 }
                 currentInputValues[i] = repetDoneInputs[i].value;
             }
+
+            // set data to localstorage
             localStorage.setItem('repetDoneArray', currentArray);
             localStorage.setItem('repetDoneInputs', currentInputValues);
 
+            // Edit progress of workout
             progressPercents.innerHTML = `${Math.round(completedCount / allCount * 100)}%`;
             progressLine.style.cssText = `width:${Math.round(completedCount / allCount * 100)}%`;
             exercisesLeft.innerHTML = allCount - completedCount;
