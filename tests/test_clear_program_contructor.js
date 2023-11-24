@@ -24,3 +24,7 @@ for(let i = 0; i < testCardNames.length; i++){
 		console.log(false);
 	}
 }
+
+if(testWorkoutNames.length == 0){
+	console.log('Program list is empty')
+}

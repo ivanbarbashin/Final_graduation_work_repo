@@ -21,11 +21,11 @@ let reguserCkeckPassword = '';
 // reguserPassword = '123154223od';
 // reguserCkeckPassword = '123154223od';
 
-// document.querySelector('.reg-form__input[name="reg_name"]').value = userName;
-// document.querySelector('.reg-form__input[name="reg_surname"]').value = userSurname;
-// document.querySelector('.reg-form__input[name="reg_login"]').value = userLogin;
-// document.querySelector('.reg-form__input[name="reg_password"]').value = userPassword;
-// document.querySelector('.reg-form__input[name="reg_password2"]').value = userCkeckPassword;
+// document.querySelector('.reg-form__input[name="reg_name"]').value = reguserName;
+// document.querySelector('.reg-form__input[name="reg_surname"]').value = reguserSurname;
+// document.querySelector('.reg-form__input[name="reg_login"]').value = reguserLogin;
+// document.querySelector('.reg-form__input[name="reg_password"]').value = reguserPassword;
+// document.querySelector('.reg-form__input[name="reg_password2"]').value = reguserCkeckPassword;
 
 
 // ---test for too short password---
