@@ -160,7 +160,7 @@ foreach ($user->program->workouts as $workout){
                                     <?php echo round(($cnt_workouts_all - $cnt_workouts_done) / $cnt_workouts_all, 2) * 100; // progress of remaining part of program ?> %
                                 </div>
                                 <h3 class="my-program__progress-item-title">Осталось(ся)</h3>
-                                <p class="my-program__progress-item-text">Тренировок: <span><?php echo $cnt_workouts_all - $cnt_workouts_done; // percents of remaining workout ?></span></p>
+                                <p class="my-program__progress-item-text">Тренировок: <span><?php echo 100 - $cnt_workouts_done; // percents of remaining workout ?></span></p>
                             </div>
                         </section>
                     </section>
